@@ -137,7 +137,7 @@ export default {
 .home-view {
   & > header {
     height: 3.8rem;
-    background-image: url("../assets/images/icon12.png");
+    background-image: url("../assets/images/icon12.jpg");
     background-size: auto 100%;
     background-position: right center;
     & > div {
@@ -344,10 +344,11 @@ export default {
                   width: 2em;
                   margin-left: 0.4rem;
                   background-image: none;
-                  background-color: #00000000;
+                  background-color: transparent;
                   outline: none;
                   border: none;
-                  color:#00000000;
+                  color: transparent;
+                  opacity: 0;
                 }
               }
             }
