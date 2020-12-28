@@ -1,7 +1,7 @@
 // 日期是否合法
 export let isValid = function (dateStr) {
     return (new Date(dateStr) + "") != 'Invalid Date';
-}
+};
 
 // 计算二月多少天
 export let getFebruaryDay = function (yearNum) {
@@ -28,7 +28,7 @@ export let getBeginMonth = function (yearNum, month) {
         return 7;
     }
     return beginMonth;
-}
+};
 
 // 日期变成【年，月，日】
 export let dateToArray = function (date) {
