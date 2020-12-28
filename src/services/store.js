@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-
+import axios from 'axios';
 /**
  * 全局变量
  * -------------------------
@@ -42,6 +42,13 @@ state.closeDialog = function (data) {
         will_close_dialog.callback(data);
     }
 };
+
+state.getLogin = function(){
+    axios.post('/_apigateway/sso/api/v1/info.rst',{},(res)=>{
+        sessionStorage.setItem('logininfo',res.result)
+    })
+}
+
 
 const store = new Vuex.Store({
     state

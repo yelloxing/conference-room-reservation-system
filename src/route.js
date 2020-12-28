@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 
+import axios from 'axios';
+
 Vue.use(VueRouter);
 
 // 配置路由
@@ -32,5 +34,15 @@ const router = new VueRouter({
       redirect: 'home'
     }]
 });
+
+router.beforeEach((to, from, next) => {
+    axios.post('/_apigateway/sso/api/v1/info.rst',{}).then(res=>{
+      if(res.data && res.data.result){
+        sessionStorage.setItem('logininfo',JSON.stringify(res.data.result))
+      }
+    })
+  next()
+})
+
 
 export default router;

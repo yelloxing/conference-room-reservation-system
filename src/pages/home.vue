@@ -25,16 +25,14 @@
     <div class="item search">
       <div class="input">
         <span> 会议室 </span>
-        <input type="text" placeholder="搜索会议室" />
+        <input type="text" placeholder="搜索会议室" v-model="searchName" @keydown.enter="searchByCondition"/>
       </div>
       <div class="button">
         <span> 地点： </span>
-        <button class="selected">全部</button>
-        <button>红楼会议中心</button>
-        <button>阳澄湖校区</button>
-        <button>敬贤堂</button>
-        <button>炳麟馆学术报告厅</button>
-        <button>绿楼</button>
+        <button :class="{'selected':!activeMeetingRoomId}" @click="selectMeetingRoom()">全部</button>
+        <button v-for="(row,index) in meetingRoomList" :key="index" @click="selectMeetingRoom(row)" :class="{'selected':activeMeetingRoomId == row.id}">
+          {{row.name}}
+        </button>
       </div>
     </div>
 
@@ -124,27 +122,59 @@ import {getFutureWeekDay,dateToStr} from '../services/dateUtil'
 export default {
   data(){
     return {
-      today:'',
-      dateList:[]
+      today:'',  //今天日期
+      dateList:[], //一周日期列表 
+      searchName:'',   //会议室搜索框
+      meetingRoomList:[],   //会议室列表
+      activeMeetingRoomId:'', //选中的会议室id
+      activeMeetingRoomName:''  //选中的会议室名称
     }
   },
   created(){
-
-  this.$axios.post('/_apigateway/sso/api/v1/info.rst',{},(res)=>{
-    console.log(res)
-  })
-
-
     this.today = new Date()
     this.dateList = this.dateList = getFutureWeekDay(dateToStr(this.today))
+
+    this.searchAll()  //初始化查询
   },
   methods: {
+    searchAll(){
+      this.$axios.post('/_apigateway/roombooking/api/v1/basedata.rst',{
+        "domainId":2
+      }).then(res=>{
+        this.meetingRoomList = res.data.result.data.addresses
+        
+      })
+    },
+    searchByCondition(){
+      this.$axios.post('/_apigateway/roombooking/api/v1/rooms.rst',{
+        "domainId":2,
+        "productId":12,
+        "addressId":this.activeMeetingRoomId,
+        "keywords":this.activeMeetingRoomName
+      }).then(res=>{
+        console.log(res)
+      })
+    },
+    selectMeetingRoom(item){
+      if(item){
+        this.activeMeetingRoomId = item.id
+        this.activeMeetingRoomName = item.name
+      }else{
+        this.activeMeetingRoomId = ''
+        this.activeMeetingRoomName = ''
+      }
+      this.searchByCondition()
+    },
     // 会议室介绍
     goDetail(item) {
       this.$router.push("detail");
     },
     // 立即预约
     dialogBespeak(item) {
+      if(!sessionStorage.getItem('logininfo')){
+        alert('请先登录')
+        return
+      }
       // item是传递给弹框的数据
       this.$store.state.openDialog("bespeak", item, (data) => {
         // 弹框关闭以后的回调
@@ -152,8 +182,7 @@ export default {
       });
     },
     remind(){
-      let logininfo = sessionStorage.getItem('logininfo')
-      if(!logininfo){
+      if(!sessionStorage.getItem('logininfo')){
         alert('请先登录！')
       }else{
         alert('请选择右侧时间段进行预约！')
