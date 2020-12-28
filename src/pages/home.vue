@@ -113,10 +113,12 @@ export default {
       meetingRoomInfoList:[],  //会议室详情
     }
   },
+  filters:{
+    numToTime
+  },
   created(){
     this.today = new Date()
     this.dateList = this.dateList = getFutureWeekDay(dateToStr(this.today))
-
     this.searchAll()  //初始化查询
   },
   methods: {
