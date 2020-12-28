@@ -88,7 +88,7 @@
           <div class="right">
             <div class="row" v-for="(row,outerIndex) in item.appointmentList" :key="outerIndex">
               <!-- 如果是已预约，class='item active' -->
-              <div class="item" v-for="(time,innerIndex) in row" :key="innerIndex" :title="calcTime(time,item)?'预约人：'+time.name+'预约时间：'+time.fullTime:''" :class="{'active':calcTime(time,item)}" @click="dialogBespeak(item,time)">
+              <div class="item" v-for="(time,innerIndex) in row" :key="innerIndex" :title="calcTime(time,item)?'预约人：'+time.name+' / 预约时间：'+time.fullTime:''" :class="{'active':calcTime(time,item)}" @click="dialogBespeak(item,time)">
                 {{time}}
               </div>
             </div>
