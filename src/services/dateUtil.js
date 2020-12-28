@@ -58,6 +58,7 @@ export let getFutureWeekDay = function(d){
             filter = getDay(day)
         }
         dateArr.push({
+            'fullDate':day.getFullYear() + '-' + dateToStrYM(day),
             'date':dateToStrYM(day),
             'filter':filter
         })
@@ -92,6 +93,12 @@ export let getDay = function(date,num=0){
     let m = d1.getMonth() + 1
     m = m < 10 ? '0' + m : m;  
     let day = d1.getDate()
-    d = d < 10 ? ('0' + d) : d; 
+    day = day < 10 ? '0' + day : day; 
     return `${m}-${day}`
 };
+
+//将数字转为时：分  ===>   7 = > 07:00
+export let numToTime = function(time){
+    let t = time < 10 ? '0' + time : time
+    return `${t}:00`
+}

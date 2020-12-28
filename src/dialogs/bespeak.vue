@@ -8,66 +8,80 @@
       <div class="row">
         <div class="col-size-12">
           <label> 会议室名称：</label>
-          <span> 红楼105 </span>
+          <span> {{params.meetingRoomName}} </span>
         </div>
         <div class="col-size-6">
           <label> 申请单位：</label>
-          <input type="text" placeholder="请输入申请单位" />
+          <!-- <input type="text" placeholder="请输入申请单位" /> -->
+          <select v-model="params.departmentId">
+            <option v-for="option in params.meetingRoomList" :key="option.id" :value="option.id">
+              {{option.name}}
+            </option>
+          </select>
         </div>
         <div class="col-size-6 select-frame">
           <label>使用日期：</label>
-          <input type="text" v-calendar placeholder="请输入使用日期" />
+          <input type="text" placeholder="请输入使用日期" v-model="params.date" disabled/>
         </div>
         <div class="col-size-6">
           <label> 预订人：</label>
-          <input type="text" placeholder="请输入预订人姓名" />
+          <input type="text" placeholder="请输入预订人姓名" v-model="params.name"/>
         </div>
         <div class="col-size-6">
           <label> 联系方式：</label>
-          <input type="text" placeholder="请输入预订人联系方式" />
+          <input type="text" placeholder="请输入预订人联系方式" v-model="params.phone"/>
         </div>
         <div class="col-size-6">
           <label> 联系人：</label>
-          <input type="text" placeholder="请输入联系人姓名" />
+          <input type="text" placeholder="请输入联系人姓名" v-model="params.contact"/>
         </div>
         <div class="col-size-6">
           <label> 联系方式：</label>
-          <input type="text" placeholder="请输入联系人联系方式" />
+          <input type="text" placeholder="请输入联系人联系方式" v-model="params.contactPhone"/>
         </div>
         <div class="col-size-6">
           <label> 出席领导：</label>
-          <input type="text" placeholder="请输入出席领导姓名" />
+          <input type="text" placeholder="请输入出席领导姓名" v-model="params.attendLeaders"/>
         </div>
         <div class="col-size-6">
           <label> 出席人数：</label>
-          <input type="text" placeholder="请输入出席人数" />
+          <input type="text" placeholder="请输入出席人数" v-model="params.attendUsers"/>
         </div>
         <div class="col-size-12">
           <label> 申请事由：</label>
-          <input type="text" placeholder="请输入申请事由" />
+          <input type="text" placeholder="请输入申请事由" v-model="params.subject"/>
         </div>
         <div class="col-size-6">
           <label> 添加附件：</label>
-          <input type="file" placeholder="请选择添加的附件" />
+          <input type="file" placeholder="请选择添加的附件" id="file"/>
         </div>
         <div class="col-size-6" style="color: #555555">
           附件格式（zip压缩文件、Word文档）
         </div>
         <div class="col-size-12">
           <label> 备注：</label>
-          <textarea placeholder="请输入备注" />
+          <textarea placeholder="请输入备注" v-model="params.remark"/>
         </div>
       </div>
     </div>
     <div class="btn-list">
-      <button>保存</button>
+      <button >保存</button>
       <button>重置</button>
       <button>确认预约</button>
     </div>
   </div>
 </template>
 <script>
-export default {};
+export default {
+  data(){
+    return {
+      params:this.$store.state.dialogs[0].data
+    }
+  },
+  created(){
+    this.params.departmentId = this.params.meetingRoomList[0].id
+  }
+};
 </script>
 <style lang="scss" scoped>
 .bespeak-view {

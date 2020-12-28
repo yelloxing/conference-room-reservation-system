@@ -25,33 +25,33 @@
     <div class="item search">
       <div class="input">
         <span> 会议室 </span>
-        <input type="text" placeholder="搜索会议室" v-model="searchName" @keydown.enter="searchByCondition"/>
+        <input type="text" placeholder="搜索会议室" v-model="searchName" @keydown.enter="searchByCondition(searchName)"/>
       </div>
       <div class="button">
         <span> 地点： </span>
         <button :class="{'selected':!activeMeetingRoomId}" @click="selectMeetingRoom()">全部</button>
-        <button v-for="(row,index) in meetingRoomList" :key="index" @click="selectMeetingRoom(row)" :class="{'selected':activeMeetingRoomId == row.id}">
+        <button v-for="(row,index) in meetingRoomList" :key="index" @click="selectMeetingRoom(row.id)" :class="{'selected':activeMeetingRoomId == row.id}">
           {{row.name}}
         </button>
       </div>
     </div>
 
     <!-- 具体的会议室在这里v-for显示 -->
-    <div class="item container" v-for="item in 3" :key="item">
+    <div class="item container" v-for="(item,index) in meetingRoomInfoList" :key="index">
       <div class="left">
         <div class="room">
-          <h2>红楼105</h2>
+          <h2>{{item.name}}</h2>
           <p>
             <span>容纳人数：</span>
-            <span> 100人 </span>
+            <span> {{item.peopleNum}}人 </span>
           </p>
           <p>
             <span> 所在校区：</span>
-            <span> 红楼会议中心 </span>
+            <span> {{item.address}} </span>
           </p>
           <p>
             <span> 主要设备：</span>
-            <span> 投影仪、话筒、演讲台 </span>
+            <span> {{item.device}} </span>
           </p>
         </div>
         <div class="button-list">
@@ -75,41 +75,22 @@
         </div>
         <div class="times">
           <span class="calendar select-frame">
-            <input type="text" v-calendar />
+            <input type="text" v-calendar v-model="item.startDate"/>
           </span>
-          <span class="time">07:00</span>
-          <span class="time">08:00</span>
-          <span class="time">09:00</span>
-          <span class="time">10:00</span>
-          <span class="time">11:00</span>
-          <span class="time">12:00</span>
-          <span class="time">13:00</span>
-          <span class="time">14:00</span>
-          <span class="time">15:00</span>
-          <span class="time">16:00</span>
-          <span class="time">17:00</span>
-          <span class="time">18:00</span>
-          <span class="time">19:00</span>
-          <span class="time">20:00</span>
-          <span class="time">21:00</span>
+          <span class="time" v-for="time in timeList" :key="time">{{time|numToTime}}</span>
         </div>
         <div class="items">
           <div class="left">
-            <!-- <div>今天</div>
-            <div>明天</div>
-            <div>后天</div>
-            <div>12-01</div>
-            <div>12-02</div>
-            <div>12-03</div>
-            <div>12-04</div> -->
             <div v-for="(row,index) in dateList" :key="index">
               {{row.filter}}
             </div>
           </div>
           <div class="right">
-            <div class="row" v-for="row in 7" :key="row">
+            <div class="row" v-for="(row,outerIndex) in item.appointmentList" :key="outerIndex">
               <!-- 如果是已预约，class='item active' -->
-              <div class="item" v-for="item in 15" :key="item" :class="{'active':item.active}" @click="dialogBespeak(item)"></div>
+              <div class="item" v-for="(time,innerIndex) in row" :key="innerIndex" :class="{'active':calcTime(time,item)}" @click="dialogBespeak(item,time)">
+                {{time.date}}
+              </div>
             </div>
           </div>
         </div>
@@ -118,16 +99,18 @@
   </div>
 </template>
 <script>
-import {getFutureWeekDay,dateToStr} from '../services/dateUtil'
+import {getFutureWeekDay,dateToStr,numToTime} from '../services/dateUtil'
 export default {
   data(){
     return {
       today:'',  //今天日期
       dateList:[], //一周日期列表 
+      timeList:[7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
       searchName:'',   //会议室搜索框
       meetingRoomList:[],   //会议室列表
       activeMeetingRoomId:'', //选中的会议室id
-      activeMeetingRoomName:''  //选中的会议室名称
+      activeMeetingRoomName:'',  //选中的会议室名称
+      meetingRoomInfoList:[],  //会议室详情
     }
   },
   created(){
@@ -142,44 +125,64 @@ export default {
         "domainId":2
       }).then(res=>{
         this.meetingRoomList = res.data.result.data.addresses
-        
+        this.searchByCondition()
       })
     },
-    searchByCondition(){
+    searchByCondition(searchName){
+      let _this = this
       this.$axios.post('/_apigateway/roombooking/api/v1/rooms.rst',{
         "domainId":2,
         "productId":12,
-        "addressId":this.activeMeetingRoomId,
-        "keywords":this.activeMeetingRoomName
+        "addressId":searchName ? '' :this.activeMeetingRoomId,
+        "keywords":searchName
       }).then(res=>{
-        console.log(res)
+        _this.meetingRoomInfoList = res.data.data
+        for(let k = 0; k < _this.meetingRoomInfoList.length; k++){
+          _this.meetingRoomInfoList[k].appointmentList = []
+          for(let i = 0; i < _this.dateList.length;i ++){
+            _this.meetingRoomInfoList[k].appointmentList.push([])
+            for(let j = 0;j < _this.timeList.length; j++){
+              _this.meetingRoomInfoList[k].appointmentList[i].push({
+                "date":_this.dateList[i].fullDate + ' ' + numToTime(_this.timeList[j]) + '-' + numToTime(_this.timeList[j] + 1),
+                "fullDate":_this.dateList[i].fullDate,
+                "time":numToTime(_this.timeList[j]) + '-' + numToTime(_this.timeList[j] + 1),
+                "fullTime":_this.dateList[i].fullDate + ' ' +numToTime(_this.timeList[j]) +  ":00"
+              })
+            }
+          }
+        }
       })
     },
-    selectMeetingRoom(item){
-      if(item){
-        this.activeMeetingRoomId = item.id
-        this.activeMeetingRoomName = item.name
-      }else{
-        this.activeMeetingRoomId = ''
-        this.activeMeetingRoomName = ''
-      }
+    selectMeetingRoom(id){
+      this.activeMeetingRoomId = id || ''
       this.searchByCondition()
     },
     // 会议室介绍
     goDetail(item) {
-      this.$router.push("detail");
+      // this.$router.push("detail");
+      window.location.href = item.infoUrl
     },
     // 立即预约
-    dialogBespeak(item) {
+    dialogBespeak(item,time) {
       if(!sessionStorage.getItem('logininfo')){
         alert('请先登录')
         return
       }
-      // item是传递给弹框的数据
-      this.$store.state.openDialog("bespeak", item, (data) => {
-        // 弹框关闭以后的回调
-        // item.active = true
-      });
+      if(time.active){
+        
+      }else{
+        // item是传递给弹框的数据
+        this.$store.state.openDialog("bespeak", {
+          "meetingRoomList":this.meetingRoomList,
+          "meetingRoomName":item.name,
+          ...time
+        }, (data) => {
+          // 弹框关闭以后的回调
+          time.active = false
+          
+        });
+      }
+     
     },
     remind(){
       if(!sessionStorage.getItem('logininfo')){
@@ -187,7 +190,21 @@ export default {
       }else{
         alert('请选择右侧时间段进行预约！')
       }
-    }
+    },
+    calcTime(time,item){
+      for(let i = 0; i < item.appointments.length;i++){
+        let fullTime = time.fullTime
+        let fullTimeStamp = new Date(fullTime).getTime()
+        if(item.appointments[i].beginTime <= fullTimeStamp && item.appointments[i].endTime > fullTimeStamp){
+          time.active = true
+          time.id = item.appointments[i].id
+          time.name = item.appointments[i].name
+          return true
+        }else{
+          return false
+        }
+      }
+    },
   },
 };
 </script>

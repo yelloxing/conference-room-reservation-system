@@ -43,11 +43,6 @@ state.closeDialog = function (data) {
     }
 };
 
-state.getLogin = function(){
-    axios.post('/_apigateway/sso/api/v1/info.rst',{},(res)=>{
-        sessionStorage.setItem('logininfo',res.result)
-    })
-}
 
 
 const store = new Vuex.Store({
