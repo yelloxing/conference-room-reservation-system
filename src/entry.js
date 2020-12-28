@@ -21,6 +21,8 @@ import './assets/styles/common.scss';
 import "./directives/calendar";
 import "./assets/styles/calendar.scss";
 
+//引入axios
+import './services/axios'
 //根对象
 window.vm = new Vue({
 

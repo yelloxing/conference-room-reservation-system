@@ -58,7 +58,7 @@
         </div>
         <div class="button-list">
           <button @click="goDetail(item)">会议室介绍</button>
-          <button @click="dialogBespeak(item)">立即预约</button>
+          <button @click="remind">立即预约</button>
         </div>
       </div>
       <div class="right">
@@ -97,18 +97,21 @@
         </div>
         <div class="items">
           <div class="left">
-            <div>今天</div>
+            <!-- <div>今天</div>
             <div>明天</div>
             <div>后天</div>
             <div>12-01</div>
             <div>12-02</div>
             <div>12-03</div>
-            <div>12-04</div>
+            <div>12-04</div> -->
+            <div v-for="(row,index) in dateList" :key="index">
+              {{row.filter}}
+            </div>
           </div>
           <div class="right">
             <div class="row" v-for="row in 7" :key="row">
               <!-- 如果是已预约，class='item active' -->
-              <div class="item" v-for="item in 15" :key="item"></div>
+              <div class="item" v-for="item in 15" :key="item" :class="{'active':item.active}" @click="dialogBespeak(item)"></div>
             </div>
           </div>
         </div>
@@ -117,7 +120,24 @@
   </div>
 </template>
 <script>
+import {getFutureWeekDay,dateToStr} from '../services/dateUtil'
 export default {
+  data(){
+    return {
+      today:'',
+      dateList:[]
+    }
+  },
+  created(){
+
+  this.$axios.post('/_apigateway/sso/api/v1/info.rst',{},(res)=>{
+    console.log(res)
+  })
+
+
+    this.today = new Date()
+    this.dateList = this.dateList = getFutureWeekDay(dateToStr(this.today))
+  },
   methods: {
     // 会议室介绍
     goDetail(item) {
@@ -128,8 +148,17 @@ export default {
       // item是传递给弹框的数据
       this.$store.state.openDialog("bespeak", item, (data) => {
         // 弹框关闭以后的回调
+        // item.active = true
       });
     },
+    remind(){
+      let logininfo = sessionStorage.getItem('logininfo')
+      if(!logininfo){
+        alert('请先登录！')
+      }else{
+        alert('请选择右侧时间段进行预约！')
+      }
+    }
   },
 };
 </script>

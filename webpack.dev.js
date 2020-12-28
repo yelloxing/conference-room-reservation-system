@@ -13,6 +13,13 @@ module.exports = merge(common, {
         inline: true,
         historyApiFallback: true,
         proxy: {
+            "/_apigateway": {
+                target: " http://218.94.154.34:54392/", // 目标代理接口地址
+                changeOrigin: true, // 开启代理，在本地创建一个虚拟服务端
+                // pathRewrite: {
+                //   "^/api": "/"
+                // }
+              },
         },
         watchOptions: {
             poll: true,

@@ -39,3 +39,59 @@ export let dateToArray = function (date) {
         date.getDate()
     ];
 };
+
+export let getFutureWeekDay = function(d){
+    let date = new Date(d)
+    let dateArr = []
+    let filter
+    for(let i = 0; i < 7;i++){
+        let today = new Date()
+        let every =  date.setDate(date.getDate() + i)
+        let day = new Date(every)
+        if(dateToStrYM(day) == dateToStrYM(today)){
+           filter = '今天'
+        }else if(dateToStrYM(day) == getDay(today,1)){
+            filter = '明天'
+        }else if(dateToStrYM(day) == getDay(today,1)){
+            filter = '后天'
+        }else{
+            filter = getDay(day)
+        }
+        dateArr.push({
+            'date':dateToStrYM(day),
+            'filter':filter
+        })
+        date = new Date(d)
+    }
+    return dateArr
+};
+
+//日期转为‘年/月/日’
+export let dateToStr = function(date,parse = '/'){
+    let y = date.getFullYear();  
+    let m = date.getMonth() + 1;  
+    m = m < 10 ? '0' + m : m;  
+    let d = date.getDate();  
+    d = d < 10 ? ('0' + d) : d;  
+    return y + parse + m + parse + d;  
+};
+
+// 日期转为 ‘月-日’
+export let dateToStrYM = function(date){
+    let m = date.getMonth() + 1;  
+    m = m < 10 ? '0' + m : m;  
+    let d = date.getDate();  
+    d = d < 10 ? ('0' + d) : d; 
+    return `${m}-${d}`;  
+};
+
+//根据指定日期获取指定天数后的日期，转为‘月-日’格式
+export let getDay = function(date,num=0){
+    let d = date.getDate()
+    let d1 = new Date( date.setDate(d + num) )
+    let m = d1.getMonth() + 1
+    m = m < 10 ? '0' + m : m;  
+    let day = d1.getDate()
+    d = d < 10 ? ('0' + d) : d; 
+    return `${m}-${day}`
+};
