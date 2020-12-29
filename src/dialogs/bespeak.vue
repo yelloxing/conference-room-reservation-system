@@ -33,24 +33,18 @@
             prop="date"
           >
             <!-- <label>使用日期：</label> -->
-            <el-input
-              type="text"
-              placeholder="请输入使用日期"
-              v-model="form.date"
-              disabled
-            />
+            <el-input type="text" placeholder="请输入使用日期" v-model="form.date" disabled/>
           </el-form-item>
-          <el-form-item
-            label="使用日期："
-            class="col-size-6 select-frame"
-            v-else
-            prop="date"
-          >
-            <el-input
-              type="text"
-              placeholder="请输入使用日期"
+          <el-form-item  label="使用日期：" class="col-size-6 select-frame" v-else prop="date">
+            <el-date-picker
               v-model="form.date"
-            />
+              class="date-picker"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              align="right">
+            </el-date-picker>
           </el-form-item>
 
           <el-form-item label="预定人：" class="col-size-6" prop="name">
@@ -176,35 +170,34 @@ export default {
         remark: "",
         filename: "",
       },
-      file: "",
-      flag: "",
-      rules: {
-        name: [
-          { required: true, message: "请输入预定人姓名", trigger: "blur" },
-        ],
-        phone: [
-          { required: true, message: "请输入预定人联系方式", trigger: "blur" },
-        ],
-        contact: [
-          { required: true, message: "请输入联系人姓名", trigger: "blur" },
-        ],
-        contactPhone: [
-          { required: true, message: "请输入联系人联系方式", trigger: "blur" },
-        ],
-        subject: [
-          { required: true, message: "请输入申请事由", trigger: "blur" },
-        ],
-      },
-    };
+      file:'',
+      flag:'',
+      rules:{
+        name:[{required:true,message:'请输入预定人姓名',trigger:'blur'}],
+        date:[{required:true,message:'请选择使用日期',trigger:'change'}],
+        phone:[{required:true,message:'请输入预定人联系方式',trigger:'blur'}],
+        contact:[{required:true,message:'请输入联系人姓名',trigger:'blur'}],
+        contactPhone:[{required:true,message:'请输入联系人联系方式',trigger:'blur'}],
+        subject:[{required:true,message:'请输入申请事由',trigger:'blur'}],
+      }
+    }
   },
-  created() {
-    let data = this.$store.state.dialogs[0].data;
-    this.$set(this.form, "meetingRoomName", data.meetingRoomName);
-    this.$set(this.form, "meetingRoomList", data.meetingRoomList);
-    this.$set(this.form, "departmentId", data.meetingRoomList[0].id);
-    this.$set(this.form, "date", data.date);
+  created(){
+    let data = this.$store.state.dialogs[0].data
+    this.$set(this.form,'meetingRoomName',data.meetingRoomName)
+    this.$set(this.form,'meetingRoomList',data.meetingRoomList)
+    this.$set(this.form,'departmentId',data.meetingRoomList[0].id)
+    this.flag = data.flag || 'add'
+    if(this.flag == 'add'){
+      this.$set(this.form,'date',data.date)
+      this.$set(this.form,'beginTime',data.beginTime)
+      this.$set(this.form,'endTime',data.endTime)
+    }else{
+      this.$set(this.form,'date',[data.beginTime,data.endTime])
+    }
+    
     // this.form.departmentId = this.form.meetingRoomList[0].id
-    this.flag = data.flag || "add";
+    
   },
   methods: {
     trigger(dom, eventType) {
@@ -254,8 +247,14 @@ export default {
         this.form.meetingRoomName = this.form.meetingRoomName;
         this.form.meetingRoomList = this.form.meetingRoomList;
         this.form.departmentId = this.form.meetingRoomList[0].id;
-        this.form.date = this.form.date;
-
+        let data = this.$store.state.dialogs[0].data
+        if(this.flag == 'add'){
+          this.form.date = data.date
+          this.form.beginTime = data.beginTime
+          this.form.endTime = data.endTime
+        }else{
+          this.form.date = data.date = [data.beginTime,data.endTime]
+        }
         this.filename = "";
         this.file = "";
         this.$refs.clearFile.value = "";
@@ -268,78 +267,74 @@ export default {
       this.$refs[form].validate((valid) => {
         if (valid) {
           let url;
-          if (this.flag == "add") {
-            url = "/_apigateway/roombooking/api/v1/create.rst";
-          } else {
-            url = "/_apigateway/roombooking/api/v1/update.rst";
+          if(_this.flag == 'add'){
+            url = '/_apigateway/roombooking/api/v1/create.rst'
+          }else{
+            url = '/_apigateway/roombooking/api/v1/update.rst'
           }
 
-          if (this.file) {
-            //存在文件，先执行文件上传，再执行提交
-            let ext = this.file.name
-              .substr(this.file.name.lastIndexOf("."))
-              .toLowerCase();
-            if (ext != ".docx" && ext != ".doc" && ext != ".zip") {
-              //文件格式需为word或者zip
-              alert("请上传word文档或者zip压缩文件");
-              return;
+          if(_this.file){  //存在文件，先执行文件上传，再执行提交
+            let ext = _this.file.name.substr(_this.file.name.lastIndexOf(".")).toLowerCase();
+            if(ext != '.docx' && ext != '.doc' && ext != '.zip'){  //文件格式需为word或者zip
+              alert('请上传word文档或者zip压缩文件')
+              return
             }
 
             let param = new FormData(); //创建form对象
-            param.append("file", this.file); //通过append向form对象添加数据
+            param.append('file',_this.file);//通过append向form对象添加数据
 
             let config = {
               headers: { "Content-Type": "multipart/form-data" },
             }; //添加请求头
-
-            this.$axios.post("/_fileup", param, config).then((res) => {
-              if (res.data.result) {
+            
+            _this.$axios.post('/_fileup',param,config).then(res=>{
+              if(res.data.result){
                 let params = {
-                  domainId: 2,
-                  productId: 12,
-                  departmentId: this.form.departmentId,
-                  beginTime: this.form.beginTime,
-                  endTime: this.form.endTime,
-                  name: this.form.name,
-                  phone: this.form.phone,
-                  contact: this.form.contact,
-                  contactPhone: this.form.contactPhone,
-                  attendLeaders: this.form.attendLeaders,
-                  attendUsers: this.form.attendUsers,
-                  resourceId: this.form.meetingRoomId,
-                  subject: this.form.subject,
-                  remark: this.form.remark,
-                  status: save ? "0" : "-1",
-                  fileKey: res.data.result.data[0].fileKey,
-                };
-                this.$axios.post(url, params).then((res) => {
-                  if (res.data && res.data.resultCode == 0) {
-                    _this.$store.state.closeDialog();
+                  domainId:2,
+                  productId:12,
+                  departmentId:_this.form.departmentId,
+                  beginTime:_this.flag == 'add' ? _this.form.beginTime : _this.form.date[0],
+                  endTime:_this.flag == 'add' ? _this.form.endTime : _this.form.date[1],
+                  name:_this.form.name,
+                  phone:_this.form.phone,
+                  contact:_this.form.contact,
+                  contactPhone:_this.form.contactPhone,
+                  attendLeaders:_this.form.attendLeaders,
+                  attendUsers:_this.form.attendUsers,
+                  resourceId:_this.form.meetingRoomId,
+                  subject:_this.form.subject,
+                  remark:_this.form.remark,
+                  status:save ? '0' : '-1',
+                  fileKey:res.data.result.data[0].fileKey
+                }
+                _this.$axios.post(url,params).then(res => {
+                  if(res.data && res.data.resultCode == 0){
+                    _this.$store.state.closeDialog()
                   }
                 });
               }
             });
           } else {
             let params = {
-              domainId: 2,
-              projectId: 12,
-              departmentId: this.form.departmentId,
-              beginTime: this.form.beginTime,
-              endTime: this.form.endTime,
-              name: this.form.name,
-              phone: this.form.phone,
-              contact: this.form.contact,
-              contactPhone: this.form.contactPhone,
-              attendLeaders: this.form.attendLeaders,
-              attendUsers: this.form.attendUsers,
-              resourceId: this.form.meetingRoomId,
-              subject: this.form.subject,
-              status: save ? "0" : "-1",
-              remark: this.form.remark,
-            };
-            this.$axios.post(url, params).then((res) => {
-              if (res.data.resultCode == 0) {
-                _this.$store.state.closeDialog();
+                domainId:2,
+                projectId:12,
+                departmentId:_this.form.departmentId,
+                beginTime:_this.flag == 'add' ? _this.form.beginTime : _this.form.date[0],
+                endTime:_this.flag == 'add' ? _this.form.endTime : _this.form.date[1],
+                name:_this.form.name,
+                phone:_this.form.phone,
+                contact:_this.form.contact,
+                contactPhone:_this.form.contactPhone,
+                attendLeaders:_this.form.attendLeaders,
+                attendUsers:_this.form.attendUsers,
+                resourceId:_this.form.meetingRoomId,
+                subject:_this.form.subject,
+                status:save ? '0' : '-1',
+                remark:_this.form.remark
+            }
+            _this.$axios.post(url,params).then(res => {
+              if(res.data.resultCode == 0){
+                _this.$store.state.closeDialog()
               }
             });
           }
@@ -458,6 +453,13 @@ export default {
       right: 0;
       opacity: 0;
       height: 100%;
+    }
+  }
+  .date-picker{
+    width: 100%;
+    
+    /deep/.el-range-separator{
+      width: 10%;
     }
   }
 }

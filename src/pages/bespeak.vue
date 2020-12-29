@@ -50,7 +50,7 @@
             <td>{{item.contactPhone}}</td>
             <td>{{item.address}}</td>
             <td>{{item.fullTime}}</td>
-            <td>{{statusList[item.status]}}</td>
+            <td :style="styleObj(item)">{{statusList[item.status]}}</td>
             <td>
               <div class="edit" :class="{'disabled':item.status != -1}" @click="edit(item)"></div>
               <div class="delete" :class="{'disabled':item.status != -1}" @click="deleteThis(item)"></div>
@@ -87,6 +87,29 @@ export default {
   created(){
     this.searchAll()
     this.getInfo()
+  },
+  computed:{
+    styleObj(){
+      return function(status){
+        let color
+        switch(status){
+          case '-1':
+          case '1':
+            color = '#2c68d5'
+            break
+          case '0':
+            color = '#f2b310'
+            break
+          case '2':
+          case '3':
+            color = '#dc1c19'
+            break
+        }
+        return {
+          'color':color
+        }
+      }
+    }
   },
   mounted() {},
   methods:{

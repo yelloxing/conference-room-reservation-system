@@ -107,7 +107,7 @@ export default {
       // dateList:[], //一周日期列表 
       timeList:[7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
       searchName:'',   //会议室搜索框
-      meetingRoomList:[],   //会议室列表
+      meetingRoomList:[],   //会议室地点列表
       activeMeetingRoomId:'', //选中的会议室id
       activeMeetingRoomName:'',  //选中的会议室名称
       meetingRoomInfoList:[],  //会议室详情
