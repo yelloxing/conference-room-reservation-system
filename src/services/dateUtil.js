@@ -69,12 +69,16 @@ export let getFutureWeekDay = function(d){
 
 //日期转为‘年/月/日’
 export let dateToStr = function(date,parse = '/'){
-    let y = date.getFullYear();  
-    let m = date.getMonth() + 1;  
-    m = m < 10 ? '0' + m : m;  
-    let d = date.getDate();  
-    d = d < 10 ? ('0' + d) : d;  
-    return y + parse + m + parse + d;  
+    if(!(date instanceof Date)){
+        return date
+    }else{
+        let y = date.getFullYear();  
+        let m = date.getMonth() + 1;  
+        m = m < 10 ? '0' + m : m;  
+        let d = date.getDate();  
+        d = d < 10 ? ('0' + d) : d;  
+        return y + parse + m + parse + d; 
+    }
 };
 
 // 日期转为 ‘月-日’
@@ -101,4 +105,48 @@ export let getDay = function(date,num=0){
 export let numToTime = function(time){
     let t = time < 10 ? '0' + time : time
     return `${t}:00`
+}
+
+//计算日期差值
+export let dateDiff = function(sDate1,sDate2){
+    if(sDate1 instanceof Date){
+        sDate1 = dateToStr(sDate1,'-')
+    }
+    if(sDate2 instanceof Date){
+        sDate2 = dateToStr(sDate2,'-')
+    }
+    let aDate,oDate1,oDate2,  iDays
+    aDate  =  sDate1.split("-")
+    oDate1  =  new  Date(aDate[1]  +  '-'  +  aDate[2]  +  '-'  +  aDate[0]) 
+    aDate  =  sDate2.split("-")
+    oDate2  =  new  Date(aDate[1]  +  '-'  +  aDate[2]  +  '-'  +  aDate[0])
+    iDays  =  parseInt(Math.abs(oDate1  -  oDate2)  /  1000  /  60  /  60  /24)
+    return  iDays
+}
+
+
+//毫秒数转为日期 'yyyy-MM-dd HH:mm'
+export let millisecondToStr = function(milliseconds){
+    let millisecond = new Date(milliseconds)
+    let y = millisecond.getFullYear()
+    let M = millisecond.getMonth() + 1
+    M = M < 10 ? '0' + M : M
+    let D = millisecond.getDate()
+    D = D < 10 ? '0' + D : D
+    let H = millisecond.getHours()
+    H = H < 10 ? '0' + H : H
+    let m = millisecond.getMinutes()
+    m = m < 10 ? '0' + m : m
+
+    return `${y}-${M}-${D} ${H}:${m}`
+}
+
+//毫秒数转为时间   'HH:mm'
+export let millisecondToHm = function(milliseconds){
+    let millisecond = new Date(milliseconds)
+    let H = millisecond.getHours()
+    H = H < 10 ? '0' + H : H
+    let m = millisecond.getMinutes()
+    m = m < 10 ? '0' + m : m
+    return `${H}:${m}`
 }

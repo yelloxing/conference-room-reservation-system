@@ -49,8 +49,8 @@
             <td>{{item.contact}}</td>
             <td>{{item.contactPhone}}</td>
             <td>{{item.address}}</td>
-            <td>{{item.beginTime}}</td>
-            <td>{{item.status}}</td>
+            <td>{{item.fullTime}}</td>
+            <td>{{statusList[item.status]}}</td>
             <td>
               <div class="edit" :class="{'disabled':item.status != -1}" @click="edit(item)"></div>
               <div class="delete" :class="{'disabled':item.status != -1}" @click="deleteThis(item)"></div>
@@ -62,7 +62,7 @@
   </div>
 </template>
 <script>
-import {dateToStr} from '../services/dateUtil'
+import {dateToStr,millisecondToHm,millisecondToStr} from '../services/dateUtil'
 export default {
   data(){
     return{
@@ -73,7 +73,11 @@ export default {
         "endTime":""
       },
       "meetingRoomList":[],
-      "activeMeetingRoomId":""
+      "activeMeetingRoomId":"",
+      "statusList":{
+        "0":"待审核",
+        "-1":"草稿"
+      }
     }
   },
   created(){
@@ -84,15 +88,28 @@ export default {
   methods:{
     //查询我的预约
     getInfo(){
-      this.$axios.post('/_apigateway/roombooking/api/v1/myrooms.rst',{
-        "domainId":2,
-        "projectId":12,
-        "keywords":this.params.keywords,
-        "addressId":this.activeMeetingRoomId,
-        "beginTime":this.params.beginTime,
-        "endTime":this.params.endTime
-      }).then(res=>{
+      let options = {
+        method: 'POST',
+        params: {
+          "domainId":2,
+          "projectId":12,
+          "keywords":this.params.keywords,
+          "addressId":this.activeMeetingRoomId,
+          "beginTime":this.params.beginTime,
+          "endTime":this.params.endTime
+        },
+        url:'/_apigateway/roombooking/api/v1/myrooms.rst',
+      }; 
+      this.$axios(options).then(res=>{
         this.list = res.data.data
+        if(this.list.length > 0){
+          for(let i = 0; i < this.list.length;i++){
+            this.list[i].date = dateToStr(new Date(this.list[i].beginTime),'-')
+            this.list[i].fullTime =  millisecondToStr(this.list[i].beginTime) + '-' + millisecondToHm(this.list[i].endTime)
+            this.list[i].beginTime = millisecondToStr(this.list[i].beginTime)
+            this.list[i].endTime = millisecondToStr(this.list[i].endTime)
+          }
+        }
       })
     },
     //查询地点
@@ -127,15 +144,21 @@ export default {
       if(item.status != '-1'){
         return
       }
-      this.$store.state.openDialog('base-view',item,(data) => {
-
-      })
+      // item是传递给弹框的数据
+        this.$store.state.openDialog("bespeak",{
+          ...item,
+          date:item.fullTime,
+          meetingRoomList:this.meetingRoomList,
+          meetingRoomName:item.resourceName,
+        }, (data) => {
+          // 弹框关闭以后的回调
+        });
     },
-    delete(item){
+    deleteThis(item){
       if(item.status != '-1'){
         return
       }
-      confirm('确定删除此条记录？',function(){
+      if(confirm('确定删除此条记录？')){
         let options = {
           method: 'POST',
           params: {
@@ -147,7 +170,7 @@ export default {
         this.$axios(options).then(res=>{
           this.getInfo()
         })
-      })
+      }
     }
   }
 };
@@ -249,7 +272,7 @@ export default {
           padding: 0.1rem;
           border-style: solid;
           border-color: #c1bcbc;
-
+          text-align: center;
           &:last-child{
             display: flex;
             justify-content: space-around;
@@ -258,6 +281,7 @@ export default {
       }
 
       .edit {
+        cursor: pointer;
         width: 20px;
         height: 20px;
         background: url('../assets/images/icon19.png');
@@ -268,6 +292,7 @@ export default {
       }
 
       .delete{
+        cursor: pointer;
         width: 20px;
         height: 20px;
         background: url('../assets/images/icon18.png');

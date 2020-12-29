@@ -75,13 +75,13 @@
         </div>
         <div class="times">
           <span class="calendar select-frame">
-            <input type="text" v-calendar v-model="item.startDate"/>
+            <input type="text" v-calendar v-model="item.startDate" @input="changeDate(item,item.startDate,index)"/>
           </span>
           <span class="time" v-for="time in timeList" :key="time">{{time|numToTime}}</span>
         </div>
         <div class="items">
           <div class="left">
-            <div v-for="(row,index) in dateList" :key="index">
+            <div v-for="(row,index) in item.dateList" :key="index">
               {{row.filter}}
             </div>
           </div>
@@ -99,12 +99,12 @@
   </div>
 </template>
 <script>
-import {getFutureWeekDay,dateToStr,numToTime} from '../services/dateUtil'
+import {getFutureWeekDay,dateToStr,numToTime,dateDiff} from '../services/dateUtil'
 export default {
   data(){
     return {
       today:'',  //今天日期
-      dateList:[], //一周日期列表 
+      // dateList:[], //一周日期列表 
       timeList:[7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
       searchName:'',   //会议室搜索框
       meetingRoomList:[],   //会议室列表
@@ -118,11 +118,22 @@ export default {
   },
   created(){
     this.today = new Date()
-    this.dateList = this.dateList = getFutureWeekDay(dateToStr(this.today))
     this.searchAll()  //初始化查询
   },
   methods: {
+    changeDate(item,date,index){
+     let between = dateDiff(date,this.today)
+     if(item.maxPreTime && between < item.maxPreTime){
+       alert('最大提前预约' + item.maxPreTime + '天')
+       date = dateToStr(this.today)
+       return
+     }
+      // item.dateList = getFutureWeekDay(date)
+      let row = this.meetingRoomInfoList[index]
+      this.queryAppointment(row,date)
+    },
     searchAll(){
+      let _this = this
       let options = {
         method: 'POST',
         params: {
@@ -131,11 +142,11 @@ export default {
         url:'/_apigateway/roombooking/api/v1/basedata.rst',
       };
       this.$axios(options).then(res=>{
-        this.meetingRoomList = res.data.result.data.addresses
-        this.searchByCondition()
+        _this.meetingRoomList = res.data.result.data.addresses
+        _this.searchByCondition()
       })
     },
-    searchByCondition(searchName){
+    searchByCondition(searchName,date,index){
       let _this = this
       let param = {
         "domainId":2,
@@ -151,22 +162,27 @@ export default {
       this.$axios(options).then(res=>{
         _this.meetingRoomInfoList = res.data.data
         for(let k = 0; k < _this.meetingRoomInfoList.length; k++){
-          _this.meetingRoomInfoList[k].appointmentList = []
-          for(let i = 0; i < _this.dateList.length;i ++){
-            _this.meetingRoomInfoList[k].appointmentList.push([])
-            for(let j = 0;j < _this.timeList.length; j++){
-              _this.meetingRoomInfoList[k].appointmentList[i].push({
-                "date":_this.dateList[i].fullDate + ' ' + numToTime(_this.timeList[j]) + '-' + numToTime(_this.timeList[j] + 1),
-                "fullDate":_this.dateList[i].fullDate,
-                "beiginTime":_this.dateList[i].fullDate + ' ' + numToTime(_this.timeList[j]),
-                "endTime":_this.dateList[i].fullDate + ' ' + numToTime(_this.timeList[j] + 1),
-                "time":numToTime(_this.timeList[j]) + '-' + numToTime(_this.timeList[j] + 1),
-                "fullTime":_this.dateList[i].fullDate + ' ' +numToTime(_this.timeList[j]) +  ":00"
+          let item = _this.meetingRoomInfoList[k]
+          this.queryAppointment(item,date)
+        }
+      })
+    },
+    queryAppointment(item,date){
+      item.appointmentList = []
+      item.dateList = getFutureWeekDay(dateToStr(date || this.today))
+      for(let i = 0; i < item.dateList.length;i ++){
+            item.appointmentList.push([])
+            for(let j = 0;j < this.timeList.length; j++){
+              item.appointmentList[i].push({
+                "date":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
+                "fullDate":item.dateList[i].fullDate,
+                "beginTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]),
+                "endTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j] + 1),
+                "time":numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
+                "fullTime":item.dateList[i].fullDate + ' ' +numToTime(this.timeList[j]) +  ":00"
               })
             }
           }
-        }
-      })
     },
     selectMeetingRoom(id){
       this.activeMeetingRoomId = id || ''
@@ -209,13 +225,14 @@ export default {
       }
     },
     calcTime(time,item){
-      for(let i = 0; i < item.appointments.length;i++){
+      let list = JSON.parse(JSON.stringify(item.appointments))
+      for(let i = 0; i < list.length;i++){
         let fullTime = time.fullTime
         let fullTimeStamp = new Date(fullTime).getTime()
-        if(item.appointments[i].beginTime <= fullTimeStamp && item.appointments[i].endTime > fullTimeStamp){
+        if(list[i].beginTime <= fullTimeStamp && list[i].endTime > fullTimeStamp){
           time.active = true
-          time.id = item.appointments[i].id
-          time.name = item.appointments[i].name
+          time.id = list[i].id
+          time.name = list[i].name
           return true
         }else{
           return false

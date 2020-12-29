@@ -11,8 +11,8 @@
             @click="goBespeak()"
             >个人中心</a
           >
-          <a href="javascript:void(0)" class="exit">登出</a>
-          <a href="javascript:void(0)" class="login">登录</a>
+          <a href="javascript:void(0)" class="exit" v-if="loginFlag" @click="logout">登出</a>
+          <a href="javascript:void(0)" class="login" v-else @click="login">登录</a>
         </div>
       </header>
       <router-view></router-view>
@@ -58,7 +58,13 @@ export default {
     return {
       // 全部弹框
       all_dialog: dialogs,
+      loginFlag:false
     };
+  },
+  created(){
+    if(sessionStorage.getItem('logininfo')){
+      this.loginFlag = true
+    }
   },
   methods: {
     doIt() {
@@ -68,6 +74,14 @@ export default {
     goBespeak() {
       this.$router.push("bespeak");
     },
+    login(){
+      window.location.href = "http://218.94.154.34:54392/"
+    },
+    logout(){
+      let logininfo = sessionStorage.getItem('logininfo')
+      let userinfo = JSON.parse(logininfo).data
+      window.location.href = userinfo.logoutUrl
+    }
   },
 };
 </script>
