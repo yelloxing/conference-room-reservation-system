@@ -26,19 +26,19 @@
           </div>
           <div class="col-size-6">
             <label> 预订人：</label>
-            <input type="text" placeholder="请输入预订人姓名" v-model="params.name"/>
+            <input type="text" placeholder="请输入预订人姓名" v-model="params.name" required/>
           </div>
           <div class="col-size-6">
             <label> 联系方式：</label>
-            <input type="text" placeholder="请输入预订人联系方式" v-model="params.phone"/>
+            <input type="text" placeholder="请输入预订人联系方式" v-model="params.phone" required/>
           </div>
           <div class="col-size-6">
             <label> 联系人：</label>
-            <input type="text" placeholder="请输入联系人姓名" v-model="params.contact"/>
+            <input type="text" placeholder="请输入联系人姓名" v-model="params.contact" required/>
           </div>
           <div class="col-size-6">
             <label> 联系方式：</label>
-            <input type="text" placeholder="请输入联系人联系方式" v-model="params.contactPhone"/>
+            <input type="text" placeholder="请输入联系人联系方式" v-model="params.contactPhone" required/>
           </div>
           <div class="col-size-6">
             <label> 出席领导：</label>
@@ -50,7 +50,7 @@
           </div>
           <div class="col-size-12">
             <label> 申请事由：</label>
-            <input type="text" placeholder="请输入申请事由" v-model="params.subject"/>
+            <input type="text" placeholder="请输入申请事由" v-model="params.subject" required/>
           </div>
           <div class="col-size-6" style="position:relative">
             <label> 添加附件：</label>
@@ -81,12 +81,14 @@ export default {
     return {
       params:{},
       file:'',
-      filename:''
+      filename:'',
+      flag:''
     }
   },
   created(){
     this.params = this.$store.state.dialogs[0].data
     this.params.departmentId = this.params.meetingRoomList[0].id
+    this.flag = this.params.flag || 'add'
   },
   methods:{
     //文件上传
@@ -111,6 +113,15 @@ export default {
 
     //提交表单   存在save则为保存，不存在save则为提交
     commit(save){
+      let _this = this
+
+      let url;
+      if(this.flag == 'add'){
+        url = '/_apigateway/roombooking/api/v1/create.rst'
+      }else{
+        url = '/_apigateway/roombooking/api/v1/update.rst'
+      }
+
       if(this.file){  //存在文件，先执行文件上传，再执行提交
         let ext = this.file.name.substr(this.file.name.lastIndexOf(".")).toLowerCase();
         if(ext != '.docx' && ext != '.doc' && ext != '.zip'){  //文件格式需为word或者zip
@@ -124,38 +135,28 @@ export default {
         let config = {
           headers:{'Content-Type':'multipart/form-data'}
         }; //添加请求头
-        let _this = this
+        
         this.$axios.post('/_fileup',param,config).then(res=>{
           if(res.data.result){
             let params = {
-            domainId:2,
-            productId:12,
-            departmentId:this.params.departmentId,
-            beginTime:this.params.beginTime,
-            endTime:this.params.endTime,
-            name:this.params.name,
-            phone:this.params.phone,
-            contact:this.params.contact,
-            contactPhone:this.params.contactPhone,
-            attendLeaders:this.params.attendLeaders,
-            attendUsers:this.params.attendUsers,
-            resourceId:this.params.meetingRoomId,
-            subject:this.params.subject,
-            remark:this.params.remark,
-            status:save ? '-1' : '0',
-            fileKey:res.data.result.data[0].fileKey
-        }
-            
-            let options = {
-              method: 'POST',
-              params: params,
-              // url:'/_apigateway/roombooking/api/v1/create.rst',
-              url:'http://218.94.154.34:12344/esites/_apigateway/roombooking/api/v1/create.rst',
-              headers:{
-                "Content-Type":"application/x-www-form-urlencoded"
-              }
-            };
-            this.$axios(options).then(res => {
+              domainId:2,
+              productId:12,
+              departmentId:this.params.departmentId,
+              beginTime:this.params.beginTime,
+              endTime:this.params.endTime,
+              name:this.params.name,
+              phone:this.params.phone,
+              contact:this.params.contact,
+              contactPhone:this.params.contactPhone,
+              attendLeaders:this.params.attendLeaders,
+              attendUsers:this.params.attendUsers,
+              resourceId:this.params.meetingRoomId,
+              subject:this.params.subject,
+              remark:this.params.remark,
+              status:save ? '0' : '-1',
+              fileKey:res.data.result.data[0].fileKey
+            }
+            this.$axios.post(url,params).then(res => {
               if(res.data && res.data.resultCode == 0){
                 _this.$store.state.closeDialog()
               }
@@ -163,7 +164,6 @@ export default {
           }
         })
       }else{
-
         let params = {
             domainId:2,
             projectId:12,
@@ -178,10 +178,10 @@ export default {
             attendUsers:this.params.attendUsers,
             resourceId:this.params.meetingRoomId,
             subject:this.params.subject,
-            status:save ? '-1' : '0',
+            status:save ? '0' : '-1',
             remark:this.params.remark
         }
-        this.$axios.post("/_apigateway/roombooking/api/v1/create.rst",params).then(res => {
+        this.$axios.post(url,params).then(res => {
           if(res.data.resultCode == 0){
             _this.$store.state.closeDialog()
           }

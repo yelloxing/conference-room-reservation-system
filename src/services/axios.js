@@ -22,6 +22,10 @@ axios.interceptors.request.use(function (config) {
 
 // 添加响应拦截器
 axios.interceptors.response.use(function (response) {
+    console.log(response)
+    if(response.data.resultCode == 1 || response.data.code == 1){
+      alert(response.data.errorMsg)
+    }
     // 对响应数据做点什么
     return response;
   }, function (error) {

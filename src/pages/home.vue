@@ -88,7 +88,7 @@
           <div class="right">
             <div class="row" v-for="(row,outerIndex) in item.appointmentList" :key="outerIndex">
               <!-- 如果是已预约，class='item active' -->
-              <div class="item" v-for="(time,innerIndex) in row" :key="innerIndex" :title="calcTime(time,item)?'预约人：'+time.name+' / 预约时间：'+time.fullTime:''" :class="{'active':calcTime(time,item)}" @click="dialogBespeak(item,time)">
+              <div class="item" v-for="(time,innerIndex) in row" :key="innerIndex" :title="time.active?'预约人：'+time.name+' / 预约时间：'+time.fullTime:''" :class="{'active':time.active}" @click="dialogBespeak(item,time)">
                 {{time.date}}
               </div>
             </div>
@@ -122,13 +122,6 @@ export default {
   },
   methods: {
     changeDate(item,date,index){
-     let between = dateDiff(date,this.today)
-     if(item.maxPreTime && between < item.maxPreTime){
-       alert('最大提前预约' + item.maxPreTime + '天')
-       date = dateToStr(this.today)
-       return
-     }
-      // item.dateList = getFutureWeekDay(date)
       let row = this.meetingRoomInfoList[index]
       this.queryAppointment(row,date)
     },
@@ -171,18 +164,38 @@ export default {
       item.appointmentList = []
       item.dateList = getFutureWeekDay(dateToStr(date || this.today))
       for(let i = 0; i < item.dateList.length;i ++){
-            item.appointmentList.push([])
-            for(let j = 0;j < this.timeList.length; j++){
-              item.appointmentList[i].push({
-                "date":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
-                "fullDate":item.dateList[i].fullDate,
-                "beginTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]),
-                "endTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j] + 1),
-                "time":numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
-                "fullTime":item.dateList[i].fullDate + ' ' +numToTime(this.timeList[j]) +  ":00"
-              })
+        item.appointmentList.push([])
+        for(let j = 0;j < this.timeList.length; j++){
+          item.appointmentList[i].push({
+            "date":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
+            "fullDate":item.dateList[i].fullDate,
+            "beginTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]),
+            "endTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j] + 1),
+            "time":numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
+            "fullTime":item.dateList[i].fullDate + ' ' +numToTime(this.timeList[j]) +  ":00"
+          })
+        }
+      }
+
+      for(let i = 0;i < item.appointmentList.length;i++){
+        for(let j = 0;j < item.appointmentList[i].length;j++){
+          let time = item.appointmentList[i][j]
+          for(let k = 0; k < item.appointments.length;k++){
+            let row = item.appointments[k]
+            let fullTime = time.fullTime
+            let fullTimeStamp = new Date(fullTime).getTime()
+            if(row.beginTime <= fullTimeStamp && row.endTime > fullTimeStamp){
+              time.active = true
+              time.id = row.id
+              time.name = row.name
+            }else{
+              time.active = false
             }
           }
+        }
+      }
+
+
     },
     selectMeetingRoom(id){
       this.activeMeetingRoomId = id || ''
@@ -222,21 +235,6 @@ export default {
         alert('请先登录！')
       }else{
         alert('请选择右侧时间段进行预约！')
-      }
-    },
-    calcTime(time,item){
-      let list = JSON.parse(JSON.stringify(item.appointments))
-      for(let i = 0; i < list.length;i++){
-        let fullTime = time.fullTime
-        let fullTimeStamp = new Date(fullTime).getTime()
-        if(list[i].beginTime <= fullTimeStamp && list[i].endTime > fullTimeStamp){
-          time.active = true
-          time.id = list[i].id
-          time.name = list[i].name
-          return true
-        }else{
-          return false
-        }
       }
     },
   },

@@ -54,6 +54,7 @@
             <td>
               <div class="edit" :class="{'disabled':item.status != -1}" @click="edit(item)"></div>
               <div class="delete" :class="{'disabled':item.status != -1}" @click="deleteThis(item)"></div>
+              <div class="cancle" :class="{'disabled':item.status == 3 || item.status == 2}" @click="cancle(item)"></div>
             </td>
           </tr>
         </tbody>
@@ -76,6 +77,9 @@ export default {
       "activeMeetingRoomId":"",
       "statusList":{
         "0":"待审核",
+        "1":"审核通过",
+        "2":"审核不通过",
+        "3":"已取消",
         "-1":"草稿"
       }
     }
@@ -150,9 +154,28 @@ export default {
           date:item.fullTime,
           meetingRoomList:this.meetingRoomList,
           meetingRoomName:item.resourceName,
+          flag:"modify"
         }, (data) => {
           // 弹框关闭以后的回调
         });
+    },
+    cancle(item){
+      if(item.status == '2' || item.status =='3'){
+        return
+      }
+      if(confirm('确定取消此条记录？')){
+        let options = {
+          method: 'POST',
+          params: {
+            "domainId":2,
+            "recordIds":item.id
+          },
+          url:'/_apigateway/roombooking/api/v1/cancel.rst',
+        };
+        this.$axios(options).then(res=>{
+          this.getInfo()
+        })
+      }
     },
     deleteThis(item){
       if(item.status != '-1'){
@@ -299,6 +322,16 @@ export default {
         
         &.disabled{
           background: url('../assets/images/icon16.png');
+        }
+      }
+      .cancle{
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        background: url('../assets/images/cancle.png');
+        
+        &.disabled{
+          background: url('../assets/images/cancle1.png');
         }
       }
     }
