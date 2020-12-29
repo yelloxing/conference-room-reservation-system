@@ -23,6 +23,13 @@ import "./assets/styles/calendar.scss";
 
 //引入axios
 import './services/axios'
+
+//引入elementui
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css';
+Vue.use(ElementUI)
+
+
 //根对象
 window.vm = new Vue({
 

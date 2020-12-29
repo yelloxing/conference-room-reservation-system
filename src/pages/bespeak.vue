@@ -7,41 +7,25 @@
         <div class="row">
           <div class="col-size-6">
             <label> 会议室：</label>
-            <input type="text" placeholder="搜索会议室" />
+            <input type="text" placeholder="搜索会议室" v-model="params.keywords" @keydown.enter="getInfo"/>
           </div>
           <div class="col-size-6 select-frame">
             <label> 时间：</label>
-            <input type="text" placeholder="请选择时间" v-calendar />
-          </div>
-          <div class="col-size-6">
-            <label> 状态：</label>
-            <select>
-              <option
-                selected="selected"
-                disabled="disabled"
-                style="display: none; color: #666666"
-                value=""
-              >
-                请选择状态
-              </option>
-              <option value="1">草稿</option>
-              <option value="2">审核中</option>
-              <option value="3">成功</option>
-              <option value="4">失败</option>
-            </select>
-          </div>
-          <div class="col-size-6">
-            <label> 关键词：</label>
-            <input type="text" placeholder="请输入关键字" />
+            <el-date-picker
+            v-model="params.date"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            @change="changeDate">
+          </el-date-picker>
           </div>
           <div class="col-size-12">
             <label> 地点： </label>
-            <button class="selected">全部</button>
-            <button>红楼会议中心</button>
-            <button>阳澄湖校区</button>
-            <button>敬贤堂</button>
-            <button>炳麟馆学术报告厅</button>
-            <button>绿楼</button>
+            <button :class="{'selected':!activeMeetingRoomId}" @click="selectMeetingRoom()">全部</button>
+            <button v-for="(row,index) in meetingRoomList" :key="index" @click="selectMeetingRoom(row.id)" :class="{'selected':activeMeetingRoomId == row.id}">
+              {{row.name}}
+            </button>
           </div>
         </div>
       </div>
@@ -59,15 +43,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in 7" :key="item">
-            <td>红楼105</td>
-            <td>一些说明事由XXXXXX</td>
-            <td>王-----</td>
-            <td>123455678901</td>
-            <td>这是一个地址哦xxxxxxx</td>
-            <td>2020-12-20</td>
-            <td>失败</td>
-            <td></td>
+          <tr v-for="(item,index) in list" :key="index">
+            <td>{{item.resourceName}}</td>
+            <td>{{item.subject}}</td>
+            <td>{{item.contact}}</td>
+            <td>{{item.contactPhone}}</td>
+            <td>{{item.address}}</td>
+            <td>{{item.beginTime}}</td>
+            <td>{{item.status}}</td>
+            <td>
+              <div class="edit" :class="{'disabled':item.status != -1}" @click="edit(item)"></div>
+              <div class="delete" :class="{'disabled':item.status != -1}" @click="deleteThis(item)"></div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -75,8 +62,94 @@
   </div>
 </template>
 <script>
+import {dateToStr} from '../services/dateUtil'
 export default {
+  data(){
+    return{
+      list:[],
+      params:{
+        "resourceId":"",
+        "beginTime":"",
+        "endTime":""
+      },
+      "meetingRoomList":[],
+      "activeMeetingRoomId":""
+    }
+  },
+  created(){
+    this.searchAll()
+    this.getInfo()
+  },
   mounted() {},
+  methods:{
+    //查询我的预约
+    getInfo(){
+      this.$axios.post('/_apigateway/roombooking/api/v1/myrooms.rst',{
+        "domainId":2,
+        "projectId":12,
+        "keywords":this.params.keywords,
+        "addressId":this.activeMeetingRoomId,
+        "beginTime":this.params.beginTime,
+        "endTime":this.params.endTime
+      }).then(res=>{
+        this.list = res.data.data
+      })
+    },
+    //查询地点
+    searchAll(){
+      let options = {
+        method: 'POST',
+        params: {
+          "domainId":2
+        },
+        url:'/_apigateway/roombooking/api/v1/basedata.rst',
+      };
+      this.$axios(options).then(res=>{
+        this.meetingRoomList = res.data.result.data.addresses
+      })
+    },
+    //选择会议室地点
+    selectMeetingRoom(id){
+      this.activeMeetingRoomId = id || ''
+      this.getInfo()
+    },
+    changeDate(){  //日期切换
+      if(this.params.date){
+        this.params.beginTime = dateToStr(this.params.date[0],'-')
+        this.params.endTime = dateToStr(this.params.date[1],'-')
+      }else{
+        this.params.beginTime = ''
+        this.params.endTime = ''
+      }
+      this.getInfo()
+    },
+    edit(item){
+      if(item.status != '-1'){
+        return
+      }
+      this.$store.state.openDialog('base-view',item,(data) => {
+
+      })
+    },
+    delete(item){
+      if(item.status != '-1'){
+        return
+      }
+      confirm('确定删除此条记录？',function(){
+        let options = {
+          method: 'POST',
+          params: {
+            "domainId":2,
+            "recordIds":item.id
+          },
+          url:'/_apigateway/roombooking/api/v1/delete.rst',
+        };
+        this.$axios(options).then(res=>{
+          this.getInfo()
+        })
+      })
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>
@@ -135,6 +208,17 @@ export default {
             }
           }
         }
+
+        .el-date-editor{
+          width: 2.8rem;
+          height: 2em;
+          padding: 0 10px;
+
+         
+        }
+          /deep/ .el-range-separator{
+            width: 10% !important;
+          }
       }
     }
     & > table {
@@ -165,6 +249,31 @@ export default {
           padding: 0.1rem;
           border-style: solid;
           border-color: #c1bcbc;
+
+          &:last-child{
+            display: flex;
+            justify-content: space-around;
+          }
+        }
+      }
+
+      .edit {
+        width: 20px;
+        height: 20px;
+        background: url('../assets/images/icon19.png');
+
+        &.disabled {
+          background: url('../assets/images/icon17.png');
+        }
+      }
+
+      .delete{
+        width: 20px;
+        height: 20px;
+        background: url('../assets/images/icon18.png');
+        
+        &.disabled{
+          background: url('../assets/images/icon16.png');
         }
       }
     }

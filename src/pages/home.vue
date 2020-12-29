@@ -123,21 +123,32 @@ export default {
   },
   methods: {
     searchAll(){
-      this.$axios.post('/_apigateway/roombooking/api/v1/basedata.rst',{
-        "domainId":2
-      }).then(res=>{
+      let options = {
+        method: 'POST',
+        params: {
+          "domainId":2
+        },
+        url:'/_apigateway/roombooking/api/v1/basedata.rst',
+      };
+      this.$axios(options).then(res=>{
         this.meetingRoomList = res.data.result.data.addresses
         this.searchByCondition()
       })
     },
     searchByCondition(searchName){
       let _this = this
-      this.$axios.post('/_apigateway/roombooking/api/v1/rooms.rst',{
+      let param = {
         "domainId":2,
         "productId":12,
         "addressId":searchName ? '' :this.activeMeetingRoomId,
         "keywords":searchName
-      }).then(res=>{
+      }
+      let options = {
+        method: 'POST',
+        params: param,
+        url:'/_apigateway/roombooking/api/v1/rooms.rst',
+      };
+      this.$axios(options).then(res=>{
         _this.meetingRoomInfoList = res.data.data
         for(let k = 0; k < _this.meetingRoomInfoList.length; k++){
           _this.meetingRoomInfoList[k].appointmentList = []
@@ -147,6 +158,8 @@ export default {
               _this.meetingRoomInfoList[k].appointmentList[i].push({
                 "date":_this.dateList[i].fullDate + ' ' + numToTime(_this.timeList[j]) + '-' + numToTime(_this.timeList[j] + 1),
                 "fullDate":_this.dateList[i].fullDate,
+                "beiginTime":_this.dateList[i].fullDate + ' ' + numToTime(_this.timeList[j]),
+                "endTime":_this.dateList[i].fullDate + ' ' + numToTime(_this.timeList[j] + 1),
                 "time":numToTime(_this.timeList[j]) + '-' + numToTime(_this.timeList[j] + 1),
                 "fullTime":_this.dateList[i].fullDate + ' ' +numToTime(_this.timeList[j]) +  ":00"
               })
@@ -177,6 +190,8 @@ export default {
         this.$store.state.openDialog("bespeak", {
           "meetingRoomList":this.meetingRoomList,
           "meetingRoomName":item.name,
+          "addressId":item.addressId,
+          "meetingRoomId":item.id,
           ...time
         }, (data) => {
           // 弹框关闭以后的回调

@@ -53,7 +53,7 @@
         </div>
         <div class="col-size-6">
           <label> 添加附件：</label>
-          <input type="file" placeholder="请选择添加的附件" id="file"/>
+          <input type="file" placeholder="请选择添加的附件" id="file" @change="getFile($event)"/>
         </div>
         <div class="col-size-6" style="color: #555555">
           附件格式（zip压缩文件、Word文档）
@@ -66,8 +66,8 @@
     </div>
     <div class="btn-list">
       <button >保存</button>
-      <button>重置</button>
-      <button>确认预约</button>
+      <button @click="reset">重置</button>
+      <button @click="commit">确认预约</button>
     </div>
   </div>
 </template>
@@ -75,11 +75,83 @@
 export default {
   data(){
     return {
-      params:this.$store.state.dialogs[0].data
+      params:{},
+      file:''
     }
   },
   created(){
+    this.params = this.$store.state.dialogs[0].data
     this.params.departmentId = this.params.meetingRoomList[0].id
+  },
+  methods:{
+    getFile(){
+      this.file = event.target.files[0];
+    },
+    reset(){
+      this.$nextTick(()=>{
+        this.params = {
+          "meetingRoomName":this.params.meetingRoomName,
+          "meetingRoomList":this.params.meetingRoomList,
+          "departmentId":this.params.meetingRoomList[0].id,
+          "date":this.params.date
+        }
+      })
+    },
+    commit(event){
+      if(this.file){
+        debugger
+        let ext = this.file.name.substr(this.file.name.lastIndexOf(".")).toLowerCase();
+        if(ext != '.docx' && ext != '.doc' && ext != '.zip'){
+          alert('请上传word文档或者zip压缩文件')
+          return
+        }
+
+        let param = new FormData(); //创建form对象
+        param.append('file',this.file);//通过append向form对象添加数据
+
+        let config = {
+          headers:{'Content-Type':'multipart/form-data'}
+        }; //添加请求头
+
+        this.$axios.post('/_fileup',param,config).then(res=>{
+          if(res.data.result){
+            let _this = this
+            let options = {
+              method: 'POST',
+              params: {
+                ...this.params,
+                domainId:2,
+                productId:12,
+                resourceId:this.params.meetingRoomId,
+                fileKey:res.data.result.data[0].fileKey
+              },
+              url:'/_apigateway/roombooking/api/v1/create.rst',
+            };
+            this.$axios(options).then(res => {
+              if(res.data.result){
+                _this.$store.state.closeDialog()
+              }
+            })
+          }
+        })
+      }else{
+        let options = {
+          method: 'POST',
+          params: {
+             ...this.params,
+            domainId:2,
+            productId:12,
+            resourceId:this.params.meetingRoomId
+          },
+          url:'/_apigateway/roombooking/api/v1/create.rst',
+        };
+        this.$axios(options).then(res => {
+            if(res.data.result){
+              _this.$store.state.closeDialog()
+            }
+          })
+      }
+    }
   }
 };
 </script>

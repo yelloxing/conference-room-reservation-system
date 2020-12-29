@@ -8,7 +8,7 @@
           <a
             href="javascript:void(0)"
             class="personal-center"
-            @click="goBespeak(item)"
+            @click="goBespeak()"
             >个人中心</a
           >
           <a href="javascript:void(0)" class="exit">登出</a>
@@ -65,7 +65,7 @@ export default {
       // todo
     },
     // 个人中心
-    goBespeak(item) {
+    goBespeak() {
       this.$router.push("bespeak");
     },
   },

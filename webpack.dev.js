@@ -20,6 +20,9 @@ module.exports = merge(common, {
                 //   "^/api": "/"
                 // }
               },
+            "/_fileup":{
+                target: "http://218.94.154.34:54392/" // 目标代理接口地址
+            }
         },
         watchOptions: {
             poll: true,
