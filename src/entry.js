@@ -21,6 +21,9 @@ import './assets/styles/common.scss';
 import "./directives/calendar";
 import "./assets/styles/calendar.scss";
 
+// 引入title
+import './directives/title';
+
 //引入axios
 import './services/axios'
 
