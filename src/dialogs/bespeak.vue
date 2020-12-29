@@ -59,9 +59,9 @@
         </div>
       </div>
       <div class="btn-list">
-        <button @click="commit('form','save')">保存</button>
-        <button @click="reset">重置</button>
-        <button @click="commit('form')">确认预约</button>
+        <button @click.prevent="commit('form','save')">保存</button>
+        <button @click.prevent="reset">重置</button>
+        <button @click.prevent="commit('form')">确认预约</button>
       </div>
     </el-form>
   </div>
