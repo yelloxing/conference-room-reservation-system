@@ -48,6 +48,20 @@
         </div>
       </div>
     </li>
+
+    <el-dialog
+      title="提示"
+      :visible.sync="$store.state.dialogVisible"
+      width="30%">
+      <span>{{$store.state.message}}</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="$store.state.dialogVisible = false">确定</el-button>
+      </span>
+    </el-dialog>
+
+    <div class="loading" v-if="$store.state.loading"> 
+      <img src="./assets/images/loading.gif"/>
+    </div>
   </ul>
 </template>
 <script>
@@ -81,6 +95,9 @@ export default {
       let logininfo = sessionStorage.getItem('logininfo')
       let userinfo = JSON.parse(logininfo).data
       window.location.href = userinfo.logoutUrl
+    },
+    handleConfirm(){
+
     }
   },
 };
@@ -173,6 +190,23 @@ export default {
       line-height: 1.5em;
       padding: 0.25rem 0;
       font-size: 0.14rem;
+    }
+  }
+
+  .loading{
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    background: #000;
+    opacity: 0.5;
+    z-index: 999;
+
+    img{
+      position: absolute;
+      top: 45%;
+      left: 48%;
+      width: 60px;
     }
   }
 }

@@ -13,7 +13,9 @@ import axios from 'axios';
 Vue.use(Vuex);
 
 let state = {
-
+    loading:false, //loading
+    dialogVisible:false, //错误弹框
+    message:'', //错误信息
     // 记录当前打开的弹框
     dialogs: []
 };
