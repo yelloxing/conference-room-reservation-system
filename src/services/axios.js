@@ -2,7 +2,7 @@ import Vue from 'vue'
 import axios from 'axios'
 import store from './store'
 
-Vue.prototype.$axios_baseUrl='_customs/suda/appointment/';
+Vue.prototype.$axios_baseUrl='/_customs/suda/appointment/';
 Vue.prototype.$axios = axios
 
 const instance = axios.create({
