@@ -132,7 +132,7 @@ export default {
         params: {
           "domainId":2
         },
-        url:'/_apigateway/roombooking/api/v1/basedata.rst',
+        url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/basedata.rst',
       };
       this.$axios(options).then(res=>{
         _this.meetingRoomList = res.data.result.data.addresses
@@ -150,7 +150,7 @@ export default {
       let options = {
         method: 'POST',
         params: param,
-        url:'/_apigateway/roombooking/api/v1/rooms.rst',
+        url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/rooms.rst',
       };
       this.$axios(options).then(res=>{
         _this.meetingRoomInfoList = res.data.data
@@ -256,7 +256,7 @@ export default {
     background-size: auto 100%;
     background-position: right center;
     & > div {
-      width: 6.5rem;
+      width: 650px;
       color: #ffffff;
       line-height: 1.2em;
       height: 3.8rem;

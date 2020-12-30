@@ -126,7 +126,7 @@ export default {
           "beginTime":this.params.beginTime,
           "endTime":this.params.endTime  
         },
-        url:'/_apigateway/roombooking/api/v1/myrooms.rst',
+        url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/myrooms.rst',
       }; 
       this.$axios(options).then(res=>{
         this.list = res.data.data
@@ -148,7 +148,7 @@ export default {
         params: {
           "domainId":2
         },
-        url:'/_apigateway/roombooking/api/v1/basedata.rst',
+        url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/basedata.rst',
       };
       this.$axios(options).then(res=>{
         this.meetingRoomList = res.data.result.data.addresses
@@ -216,7 +216,7 @@ export default {
             "domainId":2,
             "recordIds":item.id
           },
-          url:'/_apigateway/roombooking/api/v1/cancel.rst',
+          url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/cancel.rst',
         };
         this.$axios(options).then(res=>{
           this.getInfo()
@@ -236,7 +236,7 @@ export default {
             "domainId":2,
             "recordIds":item.id
           },
-          url:'/_apigateway/roombooking/api/v1/delete.rst',
+          url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/delete.rst',
         };
         this.$axios(options).then(res=>{
           this.getInfo()

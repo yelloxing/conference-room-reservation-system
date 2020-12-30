@@ -277,9 +277,9 @@ export default {
         if (valid) {
           let url;
           if(_this.flag == 'add'){
-            url = '/_apigateway/roombooking/api/v1/create.rst'
+            url = this.$axios_baseUrl+'_apigateway/roombooking/api/v1/create.rst'
           }else{
-            url = '/_apigateway/roombooking/api/v1/update.rst'
+            url = this.$axios_baseUrl+'_apigateway/roombooking/api/v1/update.rst'
             let daysBetween =  dateDiff(new Date(),this.form.date[0])
             let timesBetween =  dateDiff(new Date(),this.form.date[0],true)
             let between = dateDiff(this.form.date[0],this.form.date[1],true)
@@ -318,7 +318,7 @@ export default {
               headers: { "Content-Type": "multipart/form-data" },
             }; //添加请求头
             
-            _this.$axios.post('/_fileup',param,config).then(res=>{
+            _this.$axios.post(this.$axios_baseUrl+'_fileup',param,config).then(res=>{
               if(res.data.result){
                 let params = {
                   domainId:2,
