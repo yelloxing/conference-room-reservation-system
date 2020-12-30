@@ -50,7 +50,7 @@
             <td>{{item.contactPhone}}</td>
             <td>{{item.address}}</td>
             <td>{{item.fullTime}}</td>
-            <td :style="styleObj(item)">{{statusList[item.status]}}</td>
+            <td :style="styleObj(item.status)">{{statusList[item.status]}}</td>
             <td>
               <div class="edit" :class="{'disabled':item.status != -1}" @click="edit(item)"></div>
               <div class="delete" :class="{'disabled':item.status != -1}" @click="deleteThis(item)"></div>
@@ -63,7 +63,7 @@
   </div>
 </template>
 <script>
-import {dateToStr,millisecondToHm,millisecondToStr} from '../services/dateUtil'
+import {dateDiff, dateToStr,millisecondToHm,millisecondToStr} from '../services/dateUtil'
 export default {
   data(){
     return{
@@ -93,15 +93,15 @@ export default {
       return function(status){
         let color
         switch(status){
-          case '-1':
-          case '1':
+          case -1:
+          case 1:
             color = '#2c68d5'
             break
-          case '0':
+          case 0:
             color = '#f2b310'
             break
-          case '2':
-          case '3':
+          case 2:
+          case 3:
             color = '#dc1c19'
             break
         }
@@ -113,6 +113,7 @@ export default {
   },
   mounted() {},
   methods:{
+
     //查询我的预约
     getInfo(){
       let options = {
@@ -123,7 +124,7 @@ export default {
           "keywords":this.params.keywords,
           "addressId":this.activeMeetingRoomId,
           "beginTime":this.params.beginTime,
-          "endTime":this.params.endTime
+          "endTime":this.params.endTime  
         },
         url:'/_apigateway/roombooking/api/v1/myrooms.rst',
       }; 
@@ -139,6 +140,7 @@ export default {
         }
       })
     },
+
     //查询地点
     searchAll(){
       let options = {
@@ -152,12 +154,15 @@ export default {
         this.meetingRoomList = res.data.result.data.addresses
       })
     },
+
     //选择会议室地点
     selectMeetingRoom(id){
       this.activeMeetingRoomId = id || ''
       this.getInfo()
     },
-    changeDate(){  //日期切换
+
+    //日期切换
+    changeDate(){ 
       if(this.params.date){
         this.params.beginTime = dateToStr(this.params.date[0],'-')
         this.params.endTime = dateToStr(this.params.date[1],'-')
@@ -167,6 +172,8 @@ export default {
       }
       this.getInfo()
     },
+
+    //编辑
     edit(item){
       if(item.status != '-1'){
         return
@@ -177,14 +184,30 @@ export default {
           date:item.fullTime,
           meetingRoomList:this.meetingRoomList,
           meetingRoomName:item.resourceName,
-          flag:"modify"
+          flag:"modify",
+          recordId:item.id
         }, (data) => {
           // 弹框关闭以后的回调
+          this.getInfo()
         });
     },
+
+    //取消记录
     cancle(item){
       if(item.status == '2' || item.status =='3'){
         return
+      }
+      if(item.status == '1'){
+        let between = dateDiff(new Date(),new Date(item.beginTime),true)
+        if(between < 0){
+          this.$store.state.dialogVisible = true; //错误弹框
+          this.$store.state.message='已超过预约开始时间'; //错误信息
+          return
+        }else if(item.maxCancleTime && between < item.maxCancleTime){
+          this.$store.state.dialogVisible = true; //错误弹框
+          this.$store.state.message='已超过允许取消时间'+item.maxCancleTime + '小时'; //错误信息
+          return
+        }
       }
       if(confirm('确定取消此条记录？')){
         let options = {
@@ -200,6 +223,8 @@ export default {
         })
       }
     },
+
+    //删除记录
     deleteThis(item){
       if(item.status != '-1'){
         return

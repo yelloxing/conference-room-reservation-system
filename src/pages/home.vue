@@ -143,7 +143,7 @@ export default {
       let _this = this
       let param = {
         "domainId":2,
-        "productId":12,
+        "projectId":12,
         "addressId":searchName ? '' :this.activeMeetingRoomId,
         "keywords":searchName
       }
@@ -188,8 +188,6 @@ export default {
               time.active = true
               time.id = row.id
               time.name = row.name
-            }else{
-              time.active = false
             }
           }
         }
@@ -212,9 +210,22 @@ export default {
         alert('请先登录')
         return
       }
-      if(time.active){
-        
-      }else{
+      if(!time.active){
+        //time.beginTime   time.endTime   today
+        let daysBetween =  dateDiff(this.today,time.beginTime)
+        let timesBetween =  dateDiff(this.today,time.beginTime,true)
+        if(item.maxPreTime && daysBetween > item.maxPreTime){
+           this.$store.state.dialogVisible = true; //错误弹框
+           this.$store.state.message='预约时间大于该资源最大预约天数:'+item.maxPreTime + '天';//错误信息
+          return
+        }
+
+        if( item.maxStopTime && timesBetween < item.maxStopTime){
+          this.$store.state.dialogVisible = true; //错误弹框
+          this.$store.state.message='当前时间已过最大停止预约时间:'+item.maxStopTime + '小时'; //错误信息
+          return
+        }
+
         // item是传递给弹框的数据
         this.$store.state.openDialog("bespeak", {
           "meetingRoomList":this.meetingRoomList,
@@ -223,12 +234,9 @@ export default {
           "meetingRoomId":item.id,
           ...time
         }, (data) => {
-          // 弹框关闭以后的回调
-          time.active = false
-          
+          this.searchAll()
         });
       }
-     
     },
     remind(){
       if(!sessionStorage.getItem('logininfo')){

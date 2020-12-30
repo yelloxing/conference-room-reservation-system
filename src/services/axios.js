@@ -29,6 +29,7 @@ axios.interceptors.response.use(function (response) {
     if(response.data.resultCode == 1 || response.data.code == 1){
       store.state.dialogVisible = true
       store.state.message = response.data.errorMsg
+      return
     }
     // 对响应数据做点什么
     return response;

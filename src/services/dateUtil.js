@@ -108,19 +108,22 @@ export let numToTime = function(time){
 }
 
 //计算日期差值
-export let dateDiff = function(sDate1,sDate2){
-    if(sDate1 instanceof Date){
-        sDate1 = dateToStr(sDate1,'-')
+export let dateDiff = function(sDate1,sDate2,time){
+    if( typeof sDate1 == 'string' ){
+        sDate1 = new Date(sDate1)
     }
-    if(sDate2 instanceof Date){
-        sDate2 = dateToStr(sDate2,'-')
+    if(typeof sDate2 == 'string' ){
+        sDate2 = new Date(sDate2)
     }
-    let aDate,oDate1,oDate2,  iDays
-    aDate  =  sDate1.split("-")
-    oDate1  =  new  Date(aDate[1]  +  '-'  +  aDate[2]  +  '-'  +  aDate[0]) 
-    aDate  =  sDate2.split("-")
-    oDate2  =  new  Date(aDate[1]  +  '-'  +  aDate[2]  +  '-'  +  aDate[0])
-    iDays  =  parseInt(Math.abs(oDate1  -  oDate2)  /  1000  /  60  /  60  /24)
+    let m1,m2,iDays
+    m1 = sDate1.getTime()
+    m2 = sDate2.getTime()
+   
+    if(time){
+        iDays = (m2  -  m1)  /  1000  /  60  /  60
+    }else{
+        iDays  =  (m2  -  m1)  /  1000  /  60  /  60  /24
+    }
     return  iDays
 }
 

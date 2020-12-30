@@ -154,6 +154,7 @@
 </template>
 <script>
 import qs from "qs";
+import {dateDiff} from '../services/dateUtil'
 export default {
   data() {
     return {
@@ -187,16 +188,31 @@ export default {
     this.$set(this.form,'meetingRoomName',data.meetingRoomName)
     this.$set(this.form,'meetingRoomList',data.meetingRoomList)
     this.$set(this.form,'departmentId',data.meetingRoomList[0].id)
+    this.$set(this.form,'name',data.name)
+    this.$set(this.form,'phone',data.phone)
+    this.$set(this.form,'contact',data.contact)
+    this.$set(this.form,'contactPhone',data.contactPhone)
+    this.$set(this.form,'attendLeaders',data.attendLeaders)
+    this.$set(this.form,'attendUsers',data.attendUsers)
+    this.$set(this.form,'subject',data.subject)
+    this.$set(this.form,'remark',data.remark)
+
     this.flag = data.flag || 'add'
     if(this.flag == 'add'){
       this.$set(this.form,'date',data.date)
       this.$set(this.form,'beginTime',data.beginTime)
       this.$set(this.form,'endTime',data.endTime)
+      this.$set(this.form,'resourceId',data.meetingRoomId)
     }else{
       this.$set(this.form,'date',[data.beginTime,data.endTime])
+      this.$set(this.form,'recordId',data.recordId)
+      this.$set(this.form,'fileKey',data.fileKey)
+      this.$set(this.form,'fileName',data.fileName)
+      this.$set(this.form,'resourceId',data.resourceId)
+      this.$set(this.form,'maxPreTime',data.maxPreTime)
+      this.$set(this.form,'maxStopTime',data.maxStopTime)
+      this.$set(this.form,'maxUseTime',data.maxUseTime)
     }
-    
-    // this.form.departmentId = this.form.meetingRoomList[0].id
     
   },
   methods: {
@@ -227,13 +243,6 @@ export default {
     //重置表单
     reset() {
       this.$nextTick(() => {
-        // this.form = {
-        //   meetingRoomName: this.form.meetingRoomName,
-        //   meetingRoomList: this.form.meetingRoomList,
-        //   departmentId: this.form.meetingRoomList[0].id,
-        //   date: this.form.date,
-        // };
-
         this.form.name = "";
         this.form.phone = "";
         this.form.contact = "";
@@ -271,6 +280,28 @@ export default {
             url = '/_apigateway/roombooking/api/v1/create.rst'
           }else{
             url = '/_apigateway/roombooking/api/v1/update.rst'
+            let daysBetween =  dateDiff(new Date(),this.form.date[0])
+            let timesBetween =  dateDiff(new Date(),this.form.date[0],true)
+            let between = dateDiff(this.form.date[0],this.form.date[1],true)
+
+            if( this.form.maxUseTime && between > this.form.maxStopTime){
+              this.$store.state.dialogVisible = true; //错误弹框
+              this.$store.state.message='预约时间段大于该资源最大预约时长:'+this.form.maxStopTime + '小时'; //错误信息
+              return
+            }
+
+            if(this.form.maxPreTime && daysBetween > this.form.maxPreTime){
+              this.$store.state.dialogVisible = true; //错误弹框
+              this.$store.state.message='预约时间大于该资源最大预约天数:'+this.form.maxPreTime + '天';//错误信息
+              return
+            }
+
+            if( this.form.maxStopTime && timesBetween < item.maxStopTime){
+              this.$store.state.dialogVisible = true; //错误弹框
+              this.$store.state.message='当前时间已过最大停止预约时间:'+this.form.maxStopTime + '小时'; //错误信息
+              return
+            }
+
           }
 
           if(_this.file){  //存在文件，先执行文件上传，再执行提交
@@ -291,7 +322,7 @@ export default {
               if(res.data.result){
                 let params = {
                   domainId:2,
-                  productId:12,
+                  projectId:12,
                   departmentId:_this.form.departmentId,
                   beginTime:_this.flag == 'add' ? _this.form.beginTime : _this.form.date[0],
                   endTime:_this.flag == 'add' ? _this.form.endTime : _this.form.date[1],
@@ -301,11 +332,13 @@ export default {
                   contactPhone:_this.form.contactPhone,
                   attendLeaders:_this.form.attendLeaders,
                   attendUsers:_this.form.attendUsers,
-                  resourceId:_this.form.meetingRoomId,
+                  resourceId:_this.flag == 'add' ? _this.form.meetingRoomId : _this.form.resourceId,
+                  id:_this.form.recordId,
                   subject:_this.form.subject,
                   remark:_this.form.remark,
-                  status:save ? '0' : '-1',
-                  fileKey:res.data.result.data[0].fileKey
+                  status:save ? '-1' : '0',
+                  fileKey:res.data.result.data[0].fileKey,
+                  fileName:res.data.result.data[0].fileName,
                 }
                 _this.$axios.post(url,params).then(res => {
                   if(res.data && res.data.resultCode == 0){
@@ -327,10 +360,13 @@ export default {
                 contactPhone:_this.form.contactPhone,
                 attendLeaders:_this.form.attendLeaders,
                 attendUsers:_this.form.attendUsers,
-                resourceId:_this.form.meetingRoomId,
+                resourceId: _this.form.resourceId,
+                id:_this.form.recordId,
                 subject:_this.form.subject,
-                status:save ? '0' : '-1',
-                remark:_this.form.remark
+                status:save ? '-1' : '0',
+                remark:_this.form.remark,
+                fileKey:_this.flag == 'add' ? '' : _this.form.fileKey,
+                fileName:_this.flag == 'add' ? '' : _this.form.fileName
             }
             _this.$axios.post(url,params).then(res => {
               if(res.data.resultCode == 0){
@@ -464,3 +500,27 @@ export default {
   }
 }
 </style>
+
+
+
+
+
+{
+  attendLeaders: ""
+  attendUsers: ""
+  beginTime: "2020-12-30 14:00"
+  contact: "测试12331"
+  contactPhone: "18822223333"
+  departmentId: 12
+  domainId: 2
+  endTime: "2020-12-30 15:00"
+  fileKey: "fe98f33f-33fb-4a5c-a194-af48c5b1facb"
+  id: 43
+  name: "测试123"
+  phone: "17711112222"
+  productId: 12
+  remark: ""
+  resourceId: 8
+  status: "-1"
+  subject: "开会"
+}
