@@ -256,7 +256,8 @@ export default {
     background-size: auto 100%;
     background-position: right center;
     & > div {
-      width: 650px;
+      width: 4rem;
+      box-sizing: content-box;
       color: #ffffff;
       line-height: 1.2em;
       height: 3.8rem;
