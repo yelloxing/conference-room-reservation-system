@@ -284,9 +284,9 @@ export default {
             let timesBetween =  dateDiff(new Date(),this.form.date[0],true)
             let between = dateDiff(this.form.date[0],this.form.date[1],true)
 
-            if( this.form.maxUseTime && between > this.form.maxStopTime){
+            if( this.form.maxUseTime && between > this.form.maxUseTime){
               this.$store.state.dialogVisible = true; //错误弹框
-              this.$store.state.message='预约时间段大于该资源最大预约时长:'+this.form.maxStopTime + '小时'; //错误信息
+              this.$store.state.message='预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'; //错误信息
               return
             }
 

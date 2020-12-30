@@ -148,7 +148,7 @@ export default {
         params: {
           "domainId":2
         },
-        url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/basedata.rst',
+        url:this.$axios_baseUrl+'_apigateway/roombooking/api/view/v1/basedata.rst',
       };
       this.$axios(options).then(res=>{
         this.meetingRoomList = res.data.result.data.addresses

@@ -56,7 +56,7 @@
         </div>
         <div class="button-list">
           <button @click="goDetail(item)">会议室介绍</button>
-          <button @click="remind">立即预约</button>
+          <button @click="remind(item)">立即预约</button>
         </div>
       </div>
       <div class="right">
@@ -88,7 +88,11 @@
           <div class="right">
             <div class="row" v-for="(row,outerIndex) in item.appointmentList" :key="outerIndex">
               <!-- 如果是已预约，class='item active' -->
-              <div class="item" v-for="(time,innerIndex) in row" :key="time.active?innerIndex+'预约人：'+time.name+'#预约时间：'+time.fullTime:innerIndex" v-title="time.active?'预约人：'+time.name+'#预约时间：'+time.fullTime:''" :class="{'active':time.active}" @click="dialogBespeak(item,time)">
+              <div class="item" v-for="(time,innerIndex) in row" :key="innerIndex" 
+                  v-title="time.active?'预约人：'+time.name+'#预约时间：'+time.fullTime:''" 
+                  :class="{'active':time.active,'preselect':time.preselect}" 
+                  @click="preselectClick(time,item)"> 
+                <!-- @click="dialogBespeak(item,time)" -->
                 {{time.date}}
               </div>
             </div>
@@ -111,6 +115,7 @@ export default {
       activeMeetingRoomId:'', //选中的会议室id
       activeMeetingRoomName:'',  //选中的会议室名称
       meetingRoomInfoList:[],  //会议室详情
+      preselectList:[] //预选列表
     }
   },
   filters:{
@@ -121,10 +126,12 @@ export default {
     this.searchAll()  //初始化查询
   },
   methods: {
+    //日期切换
     changeDate(item,date,index){
-      let row = this.meetingRoomInfoList[index]
-      this.queryAppointment(row,date)
+      let row = this.meetingRoomInfoList[index]   
+      this.queryAppointment(row,date)     //切换日期后重新查询日期预约状态
     },
+    //进入页面初始化数据
     searchAll(){
       let _this = this
       let options = {
@@ -132,100 +139,121 @@ export default {
         params: {
           "domainId":2
         },
-        url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/basedata.rst',
+        url:this.$axios_baseUrl+'_apigateway/roombooking/api/view/v1/basedata.rst',   //查询会议室地点
       };
       this.$axios(options).then(res=>{
-        _this.meetingRoomList = res.data.result.data.addresses
-        _this.searchByCondition()
+        _this.meetingRoomList = res.data.result.data.addresses   
+        _this.searchByCondition()   //查询会议室预约详情
       })
     },
+
+    //查询会议室预约详情  
     searchByCondition(searchName,date,index){
       let _this = this
       let param = {
         "domainId":2,
         "projectId":12,
-        "addressId":searchName ? '' :this.activeMeetingRoomId,
-        "keywords":searchName
+        "addressId":searchName ? '' :this.activeMeetingRoomId,   //地点id
+        "keywords":searchName     //关键字 （输入框内的内容）
       }
       let options = {
         method: 'POST',
         params: param,
-        url:this.$axios_baseUrl+'_apigateway/roombooking/api/v1/rooms.rst',
+        url:this.$axios_baseUrl+'_apigateway/roombooking/api/view/v1/rooms.rst',  
       };
       this.$axios(options).then(res=>{
-        _this.meetingRoomInfoList = res.data.data
-        for(let k = 0; k < _this.meetingRoomInfoList.length; k++){
+        _this.meetingRoomInfoList = res.data.data 
+        for(let k = 0; k < _this.meetingRoomInfoList.length; k++){   //根据查询后的数据计算每个会议室的预约情况
           let item = _this.meetingRoomInfoList[k]
           this.queryAppointment(item,date)
         }
       })
     },
+    //组装时间点并进行判断当前时间点的预约情况
     queryAppointment(item,date){
-      item.appointmentList = []
-      item.dateList = getFutureWeekDay(dateToStr(date || this.today))
+      item.appointmentList = []  //储存每个点的时间点，以及预约的基本内容  （7*15二维数组）
+      item.dateList = getFutureWeekDay(dateToStr(date || this.today))  //根据日历选定的日期（默认为今天）获取到此日期未来一周的日期表
+        //组装appointmentList数组
       for(let i = 0; i < item.dateList.length;i ++){
         item.appointmentList.push([])
         for(let j = 0;j < this.timeList.length; j++){
           item.appointmentList[i].push({
-            "date":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
-            "fullDate":item.dateList[i].fullDate,
-            "beginTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]),
-            "endTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j] + 1),
-            "time":numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),
-            "fullTime":item.dateList[i].fullDate + ' ' +numToTime(this.timeList[j]) +  ":00"
+            "date":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1),  //yyyy-MM-dd HH:mm - HH:mm
+            "fullDate":item.dateList[i].fullDate,       //yyyy-MM-dd
+            "beginTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j]),  //yyyy-MM-dd HH:mm
+            "endTime":item.dateList[i].fullDate + ' ' + numToTime(this.timeList[j] + 1),  //yyyy-MM-dd HH:mm
+            "time":numToTime(this.timeList[j]) + '-' + numToTime(this.timeList[j] + 1), //HH:mm-HH:mm
+            "fullTime":item.dateList[i].fullDate + ' ' +numToTime(this.timeList[j]) +  ":00" //yyyy-MM-dd HH:mm:00
           })
         }
       }
-
+      //根据组装的数据判断该数据是否是已预约
       for(let i = 0;i < item.appointmentList.length;i++){
         for(let j = 0;j < item.appointmentList[i].length;j++){
-          let time = item.appointmentList[i][j]
+          let time = item.appointmentList[i][j]   //找到具体的时间点
           for(let k = 0; k < item.appointments.length;k++){
             let row = item.appointments[k]
-            let fullTime = time.fullTime
+            let fullTime = time.fullTime    
             let fullTimeStamp = new Date(fullTime).getTime()
-            if(row.beginTime <= fullTimeStamp && row.endTime > fullTimeStamp){
+            if(row.beginTime <= fullTimeStamp && row.endTime > fullTimeStamp){  //将该时间点与appointments中的beginTime和endTime进行比较，在范围内则标记active为true。同时记录预约人
               time.active = true
-              time.id = row.id
-              time.name = row.name
+              time.id = row.id  //会议室id
+              time.name = row.name  //预约人
             }
           }
         }
       }
-
-
     },
+
+    //预选
+    preselectClick(time,item){
+      if(time.active){  //已预约的不可预选
+        return
+      } 
+      let daysBetween =  dateDiff(this.today,time.beginTime)   //当前预约的点与现在的差值天数
+      let timesBetween =  dateDiff(this.today,time.beginTime,true) //当前预约的点与现在的差值小时数
+      if(item.maxPreTime && daysBetween > item.maxPreTime){  //选定的天数差 大于 最大预约天数
+          this.$store.state.dialogVisible = true; //错误弹框
+          this.$store.state.message='预约时间大于该资源最大预约天数:'+item.maxPreTime + '天';//错误信息
+        return
+      }
+
+      if( item.maxStopTime && timesBetween < item.maxStopTime){ //选定的小时差 小于 最大停止预约时间 
+        this.$store.state.dialogVisible = true; //错误弹框
+        this.$store.state.message='当前时间已过最大停止预约时间:'+item.maxStopTime + '小时'; //错误信息
+        return
+      }
+
+      let ind
+      let select = this.preselectList.find((row,index) => {
+        if(row.fullDate == time.fullDate){
+          ind = index
+          return true
+        }
+        return false
+      }) 
+
+      //判断预选列表内是否存在该数据，存在则删除，不存在则添加
+      if(select){
+        this.preselectList.splice(ind,1)
+        this.$set(time,'preselect',false)
+      }else{
+        this.preselectList.push(time)
+        this.$set(time,'preselect',true)
+      }
+    },
+
+    //选择会议室地点
     selectMeetingRoom(id){
       this.activeMeetingRoomId = id || ''
-      this.searchByCondition()
+      this.searchByCondition()  //查询会议室预约详情
     },
     // 会议室介绍
     goDetail(item) {
-      // this.$router.push("detail");
-      window.location.href = item.infoUrl
+      window.location.href = item.infoUrl   //跳转链接
     },
     // 立即预约
     dialogBespeak(item,time) {
-      if(!sessionStorage.getItem('logininfo')){
-        alert('请先登录')
-        return
-      }
-      if(!time.active){
-        //time.beginTime   time.endTime   today
-        let daysBetween =  dateDiff(this.today,time.beginTime)
-        let timesBetween =  dateDiff(this.today,time.beginTime,true)
-        if(item.maxPreTime && daysBetween > item.maxPreTime){
-           this.$store.state.dialogVisible = true; //错误弹框
-           this.$store.state.message='预约时间大于该资源最大预约天数:'+item.maxPreTime + '天';//错误信息
-          return
-        }
-
-        if( item.maxStopTime && timesBetween < item.maxStopTime){
-          this.$store.state.dialogVisible = true; //错误弹框
-          this.$store.state.message='当前时间已过最大停止预约时间:'+item.maxStopTime + '小时'; //错误信息
-          return
-        }
-
         // item是传递给弹框的数据
         this.$store.state.openDialog("bespeak", {
           "meetingRoomList":this.meetingRoomList,
@@ -236,13 +264,50 @@ export default {
         }, (data) => {
           this.searchAll()
         });
-      }
     },
-    remind(){
+
+    //立即预约按钮
+    remind(item){
+      //如果未登录，需先登录
       if(!sessionStorage.getItem('logininfo')){
         alert('请先登录！')
       }else{
-        alert('请选择右侧时间段进行预约！')
+        //已登录，未选择时间点
+        if(this.preselectList.length == 0){
+          alert('请选择右侧时间段进行预约！')
+        }else{
+          //计算选定的时间点是否是连续的。  
+          //计算方式：一个时间点差值是一个小时。先按时间排序，计算最后一条的开始时间和第一条的开始时间差是否等于数组长度，是则连续
+
+          let list = this.preselectList
+          list.sort(function(a,b){
+            return new Date(a.beginTime).getTime() - new Date(b.beginTime).getTime()
+          })
+          let len = list.length
+          let between = dateDiff(list[0].beginTime,list[len-1].beginTime,true)
+          if(between != list.length - 1){
+            alert('请选择连续的日期')
+          }else{
+            
+            //计算连续的时间段是否超过最大预约时长
+            let beginTime = list[0].beginTime  
+            let endTime = list[len-1].endTime
+            let between = dateDiff(beginTime,endTime,true)
+
+            if(item.maxUseTime && between > item.maxUseTime){ 
+              this.$store.state.dialogVisible = true; //错误弹框
+              this.$store.state.message='预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'; //错误信息
+              return
+            }
+
+            let param = {
+              beginTime:beginTime,
+              endTime:endTime,
+              date: beginTime+ '-' + endTime.split(' ')[1]
+            }
+            this.dialogBespeak(item,param)   //符合条件调起预约弹框
+          }
+        }
       }
     },
   },
@@ -496,6 +561,9 @@ export default {
                     border-radius: 0.05rem;
                     &.active {
                       background-color: #dc1c19;
+                    }
+                    &.preselect{
+                      background: yellow;
                     }
                   }
                 }

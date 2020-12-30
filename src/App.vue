@@ -9,7 +9,13 @@
             href="javascript:void(0)"
             class="personal-center"
             @click="goBespeak()"
-            >个人中心</a
+            v-if="loginFlag">我的预约</a
+          >
+          <a
+            href="javascript:void(0)"
+            class="personal-center"
+            @click="goBespeak()"
+            v-else>个人中心</a
           >
           <a href="javascript:void(0)" class="exit" v-if="loginFlag" @click="logout">登出</a>
           <a href="javascript:void(0)" class="login" v-else @click="login">登录</a>
