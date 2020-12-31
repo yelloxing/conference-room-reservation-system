@@ -118,7 +118,6 @@
               type="text"
               placeholder="请选择添加的附件"
               class="file"
-              v-model="form.filename"
               readonly
             />
             <input
@@ -128,13 +127,14 @@
               ref="clearFile"
               @change="getFile($event)"
             />
+            
           </el-form-item>
-          <el-form-item
-            class="col-size-6"
-            style="color: #555555; text-align: left"
-          >
-            附件格式（zip压缩文件、Word文档）
-          </el-form-item>
+          <div class="col-size-6 file-tip">
+              附件格式（zip压缩文件、Word文档）
+              <span>{{form.filename}}</span>
+              <img src="../assets/images/icon18.png" v-if="form.filename" @click="deleteFile"/> 
+          </div>
+          
           <el-form-item label="备注：" class="col-size-12" prop="remark">
             <el-input
               type="textarea"
@@ -240,6 +240,12 @@ export default {
       });
     },
 
+    //删除文件
+    deleteFile(){
+      this.form.filename = "";
+      this.file = "";
+      this.$refs.clearFile.value = "";
+    },
     //重置表单
     reset() {
       this.$nextTick(() => {
@@ -284,19 +290,25 @@ export default {
             let timesBetween =  dateDiff(new Date(),this.form.date[0],true)
             let between = dateDiff(this.form.date[0],this.form.date[1],true)
 
-            if( this.form.maxUseTime && between > this.form.maxUseTime){
+            if(timesBetween < 0){
+              this.$store.state.dialogVisible = true; //错误弹框
+              this.$store.state.message='请选择当前时间之后的时间进行预约'; //错误信息
+              return
+            }
+
+            if( this.form.maxUseTime && this.form.maxUseTime != 0 && between > this.form.maxUseTime){
               this.$store.state.dialogVisible = true; //错误弹框
               this.$store.state.message='预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'; //错误信息
               return
             }
 
-            if(this.form.maxPreTime && daysBetween > this.form.maxPreTime){
+            if(this.form.maxPreTime && this.form.maxPreTime != 0 && daysBetween > this.form.maxPreTime){
               this.$store.state.dialogVisible = true; //错误弹框
               this.$store.state.message='预约时间大于该资源最大预约天数:'+this.form.maxPreTime + '天';//错误信息
               return
             }
 
-            if( this.form.maxStopTime && timesBetween < item.maxStopTime){
+            if( this.form.maxStopTime && this.form.maxStopTime != 0 && timesBetween < item.maxStopTime){
               this.$store.state.dialogVisible = true; //错误弹框
               this.$store.state.message='当前时间已过最大停止预约时间:'+this.form.maxStopTime + '小时'; //错误信息
               return
@@ -450,6 +462,24 @@ export default {
           background-position: 2.5rem center;
           background-size: 14px;
         }
+
+        &.file-tip{
+          color: #aaa;
+          margin-left: -40px;
+          margin-top: 18px;
+          padding: 0;
+          font-size:12px ;
+
+          span{
+            font-size: 14px;
+            color: #555;
+            vertical-align: text-top;
+          }
+          img{
+            cursor: pointer;
+          }
+        }
+        
       }
     }
   }

@@ -28,7 +28,7 @@ axios.interceptors.request.use(function (config) {
 // 添加响应拦截器
 axios.interceptors.response.use(function (response) {
   store.state.loading = false
-    if(response.data.resultCode == 1 || response.data.code == 1){
+    if((response.data.resultCode == 1 || response.data.code == 1) && response.config.url.indexOf('info.rst') == '-1'){
       store.state.dialogVisible = true
       store.state.message = response.data.errorMsg
       return

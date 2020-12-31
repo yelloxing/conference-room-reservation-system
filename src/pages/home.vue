@@ -212,17 +212,30 @@ export default {
       } 
       let daysBetween =  dateDiff(this.today,time.beginTime)   //当前预约的点与现在的差值天数
       let timesBetween =  dateDiff(this.today,time.beginTime,true) //当前预约的点与现在的差值小时数
-      if(item.maxPreTime && daysBetween > item.maxPreTime){  //选定的天数差 大于 最大预约天数
+      
+      if(timesBetween < 0){
+        this.$store.state.dialogVisible = true; //错误弹框
+        this.$store.state.message='请选择当前时间之后的时间进行预约'; //错误信息
+        return
+      }
+      
+      if(item.maxPreTime != undefined && item.maxPreTime != 0 &&daysBetween > item.maxPreTime){  //选定的天数差 大于 最大预约天数
           this.$store.state.dialogVisible = true; //错误弹框
           this.$store.state.message='预约时间大于该资源最大预约天数:'+item.maxPreTime + '天';//错误信息
         return
       }
 
-      if( item.maxStopTime && timesBetween < item.maxStopTime){ //选定的小时差 小于 最大停止预约时间 
+      if(timesBetween < 0){
+        this.$store.state.dialogVisible = true; //错误弹框
+        this.$store.state.message='请选择当前时间之后的时间进行预约'; //错误信息
+        return
+      }
+      if(item.maxStopTime && item.maxStopTime != 0 && timesBetween < item.maxStopTime){ //选定的小时差 小于 最大停止预约时间 
         this.$store.state.dialogVisible = true; //错误弹框
         this.$store.state.message='当前时间已过最大停止预约时间:'+item.maxStopTime + '小时'; //错误信息
         return
       }
+
 
       let ind
       let select = this.preselectList.find((row,index) => {
