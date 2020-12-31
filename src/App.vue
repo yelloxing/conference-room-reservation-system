@@ -2,7 +2,19 @@
   <ul class="rootApp">
     <!-- 主界面 -->
     <li class="ui-main">
-      <router-view></router-view>
+      <header>
+        <h1>会议室预约管理系统</h1>
+        <div class="right"></div>
+      </header>
+      <div class="img"></div>
+      <div class="content">
+        <router-view></router-view>
+      </div>
+      <footer>
+        Copyright©苏州大学 2020 All Rights Reserved
+        <br />
+        服务中心联系电话：0512-65221621
+      </footer>
     </li>
 
     <!-- 弹框界面 -->
@@ -103,6 +115,53 @@ export default {
     }
   }
   & > .ui-main {
+    & > header {
+      background-color: #ffffff;
+      padding: 0 calc(50vw - 6rem);
+      line-height: 0.65rem;
+      height: 0.65rem;
+      position: relative;
+      white-space: nowrap;
+      & > h1 {
+        background-image: url("./assets/images/icon3.png");
+        background-size: auto 75%;
+        font-size: 0.22rem;
+        padding-left: 2.5rem;
+        background-repeat: no-repeat;
+        background-position: 0.5rem center;
+        color: #333333;
+        font-weight: 400;
+        letter-spacing: 0.01rem;
+      }
+      & > .right {
+        right: 0.5rem;
+        top: 0;
+        position: absolute;
+        width: 0.65rem;
+        text-align: right;
+        height: 0.65rem;
+        background-image: url("./assets/images/icon20.png");
+        background-size: 40% auto;
+        background-repeat: no-repeat;
+        background-position: right center;
+      }
+    }
+    & > .img {
+       background-image: url("./assets/images/icon12.png");
+       height: 300px;
+       background-position: center center;
+       background-size: auto 100%;
+    }
+    & > .content {
+      margin:-.2rem .5rem 0 .5rem;
+    }
+    & > footer {
+      text-align: center;
+      color: #b2a3a3;
+      line-height: 1.5em;
+      padding: 0.25rem 0;
+      font-size: 0.14rem;
+    }
   }
   .loading {
     position: fixed;
