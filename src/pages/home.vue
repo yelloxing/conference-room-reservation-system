@@ -254,6 +254,7 @@ export default {
         this.preselectList.push(time)
         this.$set(time,'preselect',true)
       }
+      this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
     },
 
     //选择会议室地点
