@@ -112,6 +112,7 @@ export default {
       timeList:[7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
       searchName:'',   //会议室搜索框
       meetingRoomList:[],   //会议室地点列表
+      departmentList:[], //部门数组
       activeMeetingRoomId:'', //选中的会议室id
       activeMeetingRoomName:'',  //选中的会议室名称
       meetingRoomInfoList:[],  //会议室详情
@@ -143,6 +144,7 @@ export default {
       };
       this.$axios(options).then(res=>{
         _this.meetingRoomList = res.data.result.data.addresses   
+        _this.departmentList = res.data.result.data.departments
         _this.searchByCondition()   //查询会议室预约详情
       })
     },
@@ -239,7 +241,7 @@ export default {
 
       let ind
       let select = this.preselectList.find((row,index) => {
-        if(row.fullDate == time.fullDate){
+        if(row.fullTime == time.fullTime){
           ind = index
           return true
         }
@@ -268,15 +270,22 @@ export default {
     },
     // 立即预约
     dialogBespeak(item,time) {
+      let _this = this
         // item是传递给弹框的数据
         this.$store.state.openDialog("bespeak", {
           "meetingRoomList":this.meetingRoomList,
+          "departmentList":this.departmentList,
           "meetingRoomName":item.name,
           "addressId":item.addressId,
           "meetingRoomId":item.id,
           ...time
         }, (data) => {
-          this.searchAll()
+          if(_this.$store.state.commitFlag){
+             _this.searchAll()
+             _this.preselectList = []
+             _this.$store.state.commitFlag = false
+          }
+         
         });
     },
 
@@ -577,7 +586,7 @@ export default {
                       background-color: #dc1c19;
                     }
                     &.preselect{
-                      background: yellow;
+                      border: 1px solid  #dc1c19;
                     }
                   }
                 }

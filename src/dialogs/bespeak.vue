@@ -18,7 +18,7 @@
             <!-- <input type="text" placeholder="请输入申请单位" /> -->
             <el-select v-model="form.departmentId">
               <el-option
-                v-for="option in form.meetingRoomList"
+                v-for="option in form.departmentList"
                 :key="option.id"
                 :label="option.name"
                 :value="option.id"
@@ -26,16 +26,15 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item
+          <!-- <el-form-item
             label="使用日期："
             class="col-size-6 select-frame"
             v-if="flag == 'add'"
             prop="date"
           >
-            <!-- <label>使用日期：</label> -->
             <el-input type="text" placeholder="请输入使用日期" v-model="form.date" disabled/>
-          </el-form-item>
-          <el-form-item  label="使用日期：" class="col-size-6 select-frame" v-else prop="date">
+          </el-form-item> -->
+          <el-form-item  label="使用日期：" class="col-size-6 select-frame"  prop="date">
             <el-date-picker
               v-model="form.date"
               class="date-picker"
@@ -187,7 +186,8 @@ export default {
     let data = this.$store.state.dialogs[0].data
     this.$set(this.form,'meetingRoomName',data.meetingRoomName)
     this.$set(this.form,'meetingRoomList',data.meetingRoomList)
-    this.$set(this.form,'departmentId',data.meetingRoomList[0].id)
+    this.$set(this.form,'departmentList',data.departmentList)
+    this.$set(this.form,'departmentId',data.departmentList.length > 0 ? data.departmentList[0].id : '')
     this.$set(this.form,'name',data.name)
     this.$set(this.form,'phone',data.phone)
     this.$set(this.form,'contact',data.contact)
@@ -196,15 +196,12 @@ export default {
     this.$set(this.form,'attendUsers',data.attendUsers)
     this.$set(this.form,'subject',data.subject)
     this.$set(this.form,'remark',data.remark)
+    this.$set(this.form,'date',[data.beginTime,data.endTime])
 
     this.flag = data.flag || 'add'
     if(this.flag == 'add'){
-      this.$set(this.form,'date',data.date)
-      this.$set(this.form,'beginTime',data.beginTime)
-      this.$set(this.form,'endTime',data.endTime)
       this.$set(this.form,'resourceId',data.meetingRoomId)
     }else{
-      this.$set(this.form,'date',[data.beginTime,data.endTime])
       this.$set(this.form,'recordId',data.recordId)
       this.$set(this.form,'fileKey',data.fileKey)
       this.$set(this.form,'fileName',data.fileName)
@@ -261,7 +258,7 @@ export default {
 
         this.form.meetingRoomName = this.form.meetingRoomName;
         this.form.meetingRoomList = this.form.meetingRoomList;
-        this.form.departmentId = this.form.meetingRoomList[0].id;
+        this.form.departmentId = this.form.departmentList.length > 0 ? this.form.departmentList[0].id : '';
         let data = this.$store.state.dialogs[0].data
         if(this.flag == 'add'){
           this.form.date = data.date
@@ -336,8 +333,8 @@ export default {
                   domainId:2,
                   projectId:12,
                   departmentId:_this.form.departmentId,
-                  beginTime:_this.flag == 'add' ? _this.form.beginTime : _this.form.date[0],
-                  endTime:_this.flag == 'add' ? _this.form.endTime : _this.form.date[1],
+                  beginTime:_this.form.date[0],
+                  endTime: _this.form.date[1],
                   name:_this.form.name,
                   phone:_this.form.phone,
                   contact:_this.form.contact,
@@ -354,7 +351,9 @@ export default {
                 }
                 _this.$axios.post(url,params).then(res => {
                   if(res.data && res.data.resultCode == 0){
+                     _this.$store.state.commitFlag = true
                     _this.$store.state.closeDialog()
+                   
                   }
                 });
               }
@@ -364,8 +363,8 @@ export default {
                 domainId:2,
                 projectId:12,
                 departmentId:_this.form.departmentId,
-                beginTime:_this.flag == 'add' ? _this.form.beginTime : _this.form.date[0],
-                endTime:_this.flag == 'add' ? _this.form.endTime : _this.form.date[1],
+                beginTime: _this.form.date[0],
+                endTime: _this.form.date[1],
                 name:_this.form.name,
                 phone:_this.form.phone,
                 contact:_this.form.contact,
@@ -382,7 +381,9 @@ export default {
             }
             _this.$axios.post(url,params).then(res => {
               if(res.data.resultCode == 0){
+                _this.$store.state.commitFlag = true
                 _this.$store.state.closeDialog()
+                
               }
             });
           }
@@ -530,27 +531,3 @@ export default {
   }
 }
 </style>
-
-
-
-
-
-{
-  attendLeaders: ""
-  attendUsers: ""
-  beginTime: "2020-12-30 14:00"
-  contact: "测试12331"
-  contactPhone: "18822223333"
-  departmentId: 12
-  domainId: 2
-  endTime: "2020-12-30 15:00"
-  fileKey: "fe98f33f-33fb-4a5c-a194-af48c5b1facb"
-  id: 43
-  name: "测试123"
-  phone: "17711112222"
-  productId: 12
-  remark: ""
-  resourceId: 8
-  status: "-1"
-  subject: "开会"
-}

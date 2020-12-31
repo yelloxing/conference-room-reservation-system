@@ -17,7 +17,8 @@ let state = {
     dialogVisible:false, //错误弹框
     message:'', //错误信息
     // 记录当前打开的弹框
-    dialogs: []
+    dialogs: [],
+    commitFlag:false  //提交记录
 };
 
 //  打开弹框

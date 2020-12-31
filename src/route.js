@@ -40,8 +40,10 @@ router.beforeEach((to, from, next) => {
       if(res.data.resultCode == 0 || res.data.code == 0){
         sessionStorage.setItem('logininfo',JSON.stringify(res.data.result))
       }
+      next()
+    }).catch(()=>{
+      next()
     })
-  next()
 })
 
 
