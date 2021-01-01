@@ -3,17 +3,18 @@
     <!-- 查询头 -->
     <div class="item search">
       <div class="input">
-        <input type="text" placeholder="搜索会议室" v-model="searchName" />
-        <button></button>
+        <input type="text" placeholder="搜索会议室" v-model="keywords" />
+        <button @click="queryMeetingRoomInfo"></button>
       </div>
       <div class="button">
         <span> 地点： </span>
         <div>
-          <button :class="{ selected: !activeMeetingRoomId }">全部</button>
+          <button :class="{ selected: !addressId }" @click="changeAddress">全部</button>
           <button
-            v-for="(row, index) in meetingRoomList"
+            v-for="(row, index) in addressList"
             :key="index"
-            :class="{ selected: activeMeetingRoomId == row.id }"
+            :class="{ selected: addressId == row.id }"
+            @click="changeAddress(row)"
           >
             {{ row.name }}
           </button>
@@ -30,7 +31,7 @@
       <div class="top">
         <div class="header">
           <div class="room">
-            <h2>{{ item.name }}红楼105</h2>
+            <h2>{{ item.name }}</h2>
             <p>
               <span>容纳人数：</span>
               <span> {{ item.peopleNum }}人 </span>
@@ -50,7 +51,7 @@
         <div class="top">
           <div class="left">
             <span class="title">预约情况</span>
-            <input type="text" />
+            <input type="text" v-model="appointDate"/>
           </div>
           <span class="to" v-togger-view>点击查看预约的情况</span>
         </div>
@@ -59,7 +60,7 @@
             <button class="left">左边</button>
             <button class="right">右边</button>
           </div>
-          <div class="time">
+           <div class="time">
             <span>今天</span>
             <span>昨天</span>
             <span>明天</span>
@@ -86,31 +87,109 @@
   </div>
 </template>
 <script>
+import {getFutureWeekDay,millisecondToDateStr,dateToStr,numToTime,dateBetween} from '../services/dateUtil'
 export default {
   data() {
     return {
-      today: "", //今天日期
+      today: new Date(), //今天日期
       // dateList:[], //一周日期列表
       timeList: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
-      searchName: "", //会议室搜索框
-      meetingRoomList: [
-        { name: "红楼会议中心", id: "1" },
-        { name: "红楼会议中心", id: "1" },
-        { name: "红楼会议中心", id: "1" },
-        { name: "红楼会议中心", id: "1" },
-        { name: "绿楼", id: "2" },
-        { name: "一个学数辉煌的", id: "3" },
-        { name: "5广泛大概", id: "4" },
-        { name: "法大师傅", id: "5" },
-      ], //会议室地点列表
+      keyword: "", //会议室名称搜索框
+      addressList: [], //会议室地点列表
       departmentList: [], //部门数组
-      activeMeetingRoomId: "", //选中的会议室id
+      addressId: "", //选中的会议室id
+      keywords:"", //搜索会议室名称关键字
       activeMeetingRoomName: "", //选中的会议室名称
-      meetingRoomInfoList: [1, 2, 3, 4, 5, 6], //会议室详情
+      meetingRoomInfoList: [{},{},{},{}], //会议室列表
+      appointDate:'',//预约日期
+      activeDateId:'', //当前选中的日期
       preselectList: [], //预选列表
     };
   },
+
+  created(){
+    this.queryAllMeetingRomm()
+    // this.appointDate = this.today  //默认为今天
+    this.appointDate = '2021-01-01'
+  },
+
   methods: {
+    //查询所有会议室及部门
+    queryAllMeetingRomm(){
+      this.$axios.post('_apigateway/roombooking/api/view/v1/basedata.rst',{
+        "domainId":2
+      }).then(res => {
+        if(res.data.resultCode == 0){
+          this.addressList = res.data.result.data.addresses;
+          this.departmentList = res.data.result.data.departments;
+          this.queryMeetingRoomInfo()  //查询会议室详情
+
+          // this.queryAppointInfo()
+        }
+      })
+    },
+    queryMeetingRoomInfo(){
+      let options = {
+        method:"POST",
+        params:{
+          "domainId":2,
+          "projectId":12,
+          "addressId":this.addressId,
+          "keywords":this.keywords
+        },
+        url:'_apigateway/roombooking/api/view/v1/rooms.rst'
+      };
+      this.$axios(options).then(res => {
+        if(res.data.code == 0){
+          this.meetingRoomInfoList = res.data.data
+
+          this.queryAppointInfo()
+        }
+      })
+    },
+
+    //查询会议室预约详细记录
+    queryAppointInfo(list){
+      let that = this
+      this.meetingRoomInfoList.forEach((item,index1) => {
+        item.dates = getFutureWeekDay(dateToStr(that.appointDate))
+        item.dates.forEach(date => {
+          date.times = that.timeList.map(time => {
+            let param = {
+              "time" : numToTime(time),
+              "fullTime" : `${date.fullDate} ${numToTime(time)}`,
+              "beginTime": `${date.fullDate} ${numToTime(time)}`,
+              "endTime":`${date.fullDate} ${numToTime(time+1)}`
+            }
+            let millisecond = new Date(param.fullTime).getTime()
+
+            item.appointments && item.appointments.forEach(appointment=>{
+              if(millisecond >= appointment.beginTime && millisecond < appointment.endTime){
+                param.active = true
+                return
+              }
+            })
+
+            return param
+          })
+        })
+
+      })
+      console.log(this.meetingRoomInfoList)
+    },
+
+
+    activeDate(i){
+     this.activeDateId = i
+     this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
+    },
+
+    //切换地点
+    changeAddress(row){
+      this.addressId = row ? row.id : ''
+      this.queryMeetingRoomInfo()
+    },
+
     goDetail() {
       this.$router.push("detail");
     },

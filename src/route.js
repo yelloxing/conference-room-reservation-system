@@ -35,16 +35,16 @@ const router = new VueRouter({
     }]
 });
 
-// router.beforeEach((to, from, next) => {
-// axios.post('/_apigateway/sso/api/v1/info.rst',{}).then(res=>{
-//   if(res.data.resultCode == 0 || res.data.code == 0){
-//     sessionStorage.setItem('logininfo',JSON.stringify(res.data.result))
-//   }
-//   next()
-// }).catch(()=>{
-//   next()
-// })
-// })
+router.beforeEach((to, from, next) => {
+axios.post('/_apigateway/sso/api/v1/info.rst',{}).then(res=>{
+  if(res.data.resultCode == 0 || res.data.code == 0){
+    sessionStorage.setItem('logininfo',JSON.stringify(res.data.result))
+  }
+  next()
+}).catch(()=>{
+  next()
+})
+})
 
 
 export default router;

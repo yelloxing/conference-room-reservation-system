@@ -40,29 +40,35 @@ export let dateToArray = function (date) {
     ];
 };
 
-export let getFutureWeekDay = function(d){
-    let date = new Date(d)
+export let getFutureWeekDay = function(d,filter=true){
+    let date = new Date(d) 
     let dateArr = []
-    let filter
+    let desc,today = new Date()
     for(let i = 0; i < 7;i++){
-        let today = new Date()
-        let every =  date.setDate(date.getDate() + i)
-        let day = new Date(every)
-        if(dateToStrYM(day) == dateToStrYM(today)){
-           filter = '今天'
-        }else if(dateToStrYM(day) == getDay(today,1)){
-            filter = '明天'
-        }else if(dateToStrYM(day) == getDay(today,1)){
-            filter = '后天'
-        }else{
-            filter = getDay(day)
+        let day = new Date(date.getTime() + 24 * 60 * 60 * 1000 * i)    
+        if(filter){
+            let between = dateBetween(dateToStr(today),day)
+            switch(between){
+                case 0:
+                    desc = '今天';
+                    break;
+                case 1:
+                    desc = '明天';
+                    break;
+                case 2:
+                    desc = '后天';
+                    break;
+                default:
+                    desc = dateToStrYM(day)
+            }
         }
-        dateArr.push({
-            'fullDate':day.getFullYear() + '-' + dateToStrYM(day),
+        let param = {
+            'fullDate':dateToStr(day,'-'),
             'date':dateToStrYM(day),
-            'filter':filter
-        })
-        date = new Date(d)
+        }
+        desc && (param.desc = desc) 
+        // options.timeList.length > 0 && (param.timeList = options.timeList)
+        dateArr.push(param)
     }
     return dateArr
 };
@@ -90,16 +96,16 @@ export let dateToStrYM = function(date){
     return `${m}-${d}`;  
 };
 
-//根据指定日期获取指定天数后的日期，转为‘月-日’格式
-export let getDay = function(date,num=0){
-    let d = date.getDate()
-    let d1 = new Date( date.setDate(d + num) )
-    let m = d1.getMonth() + 1
-    m = m < 10 ? '0' + m : m;  
-    let day = d1.getDate()
-    day = day < 10 ? '0' + day : day; 
-    return `${m}-${day}`
-};
+// //根据指定日期获取指定天数后的日期，转为‘月-日’格式
+// export let getDay = function(date,num=0){
+//     let d = date.getDate()
+//     let d1 = new Date( date.setDate(d + num) )
+//     let m = d1.getMonth() + 1
+//     m = m < 10 ? '0' + m : m;  
+//     let day = d1.getDate()
+//     day = day < 10 ? '0' + day : day; 
+//     return `${m}-${day}`
+// };
 
 //将数字转为时：分  ===>   7 = > 07:00
 export let numToTime = function(time){
@@ -108,7 +114,7 @@ export let numToTime = function(time){
 }
 
 //计算日期差值
-export let dateDiff = function(sDate1,sDate2,time){
+export let dateBetween= function(sDate1,sDate2,time){
     if( typeof sDate1 == 'string' ){
         sDate1 = new Date(sDate1)
     }
@@ -152,4 +158,19 @@ export let millisecondToHm = function(milliseconds){
     let m = millisecond.getMinutes()
     m = m < 10 ? '0' + m : m
     return `${H}:${m}`
+}
+
+//毫秒数转为时间   'HH:mm'
+export let millisecondToDateStr = function(milliseconds){
+    let date = new Date(milliseconds)
+    let y = date.getFullYear()
+    let M = date.getMonth() + 1
+    let d = date.getDate()
+    let H = date.getHours()
+    let m = date.getMinutes()
+    return `${y}-${getZero(M)}-${getZero(d)} ${getZero(H)}:${getZero(m)}`
+}
+
+let getZero = function(d){
+    return d < 10 ? '0' + d : d
 }
