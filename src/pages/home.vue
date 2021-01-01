@@ -46,6 +46,38 @@
           </div>
         </div>
       </div>
+      <div class="select-calendar">
+        <div class="top">
+          <div class="left">
+            <span class="title">预约情况</span>
+            <input type="text" />
+          </div>
+          <span class="to" v-togger-view>点击查看预约的情况</span>
+        </div>
+        <div class="bottom">
+          <div class="btns">
+            <button class="left">左边</button>
+            <button class="right">右边</button>
+          </div>
+          <div class="time">
+            <span>今天</span>
+            <span>昨天</span>
+            <span>明天</span>
+            <span>12:17</span>
+            <span>12:18</span>
+            <span>12:19</span>
+            <span>12:20</span>
+          </div>
+          <div class="time-btns">
+            <span v-for="value in timeList" :key="value">
+              <div>{{ value }}:00</div>
+              <!-- class='active' -->
+              <div></div>
+            </span>
+            <span></span>
+          </div>
+        </div>
+      </div>
       <div class="button-list">
         <button @click="goDetail(item)">会议室介绍</button>
         <button @click="remind(item)">立即预约</button>
@@ -185,6 +217,118 @@ export default {
                 }
               }
             }
+          }
+        }
+      }
+      & > .select-calendar {
+        text-align: center;
+        & > .top {
+          position: relative;
+          & > .to {
+            background-image: url("../assets/images/icon22.png");
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: auto 40%;
+            color: #333333;
+            font-size: 0.12rem;
+            padding-right: 0.3rem;
+            line-height: 0.4rem;
+            height: 0.4rem;
+            display: inline-block;
+          }
+          & > .left {
+            position: absolute;
+            top: 0;
+            left: 0.25rem;
+            display: none;
+            & > .title {
+              line-height: 0.4rem;
+            }
+            & > input {
+              width: 0.3rem;
+              height: 0.4rem;
+              border: none;
+              outline: none;
+              background-color: transparent;
+              background-image: url("../assets/images/icon15.png");
+              background-size: 60% auto;
+              background-position: center center;
+              background-repeat: no-repeat;
+            }
+          }
+        }
+        & > .bottom {
+          height: 0;
+          overflow: hidden;
+          transition-duration: 1s;
+          transition-property: height;
+          & > .time-btns {
+            text-align: center;
+            padding-top: 1em;
+            & > span {
+              display: inline-block;
+              width: 12%;
+              line-height: 2em;
+              & > div:last-child {
+                display: inline-block;
+                width: 0.36rem;
+                height: 0.36rem;
+                margin: 0.06rem 0.04rem;
+                background-color: #f5bfbf;
+                border-radius: 0.05rem;
+                &.active {
+                  background-color: #dc1c19;
+                }
+              }
+            }
+          }
+          & > .time {
+            text-align: center;
+            white-space: nowrap;
+            margin: 0 0.25rem;
+            line-height: 3em;
+            border-bottom: 1px solid #555555;
+            & > span {
+              display: inline-block;
+              width: 13%;
+            }
+          }
+          & > .btns {
+            text-align: left;
+            & > button {
+              background-repeat: no-repeat;
+              background-position: center center;
+              background-size: 70% auto;
+              width: 0.2rem;
+              height: 0.2rem;
+              font-size: 0;
+              background-color: rgb(235, 168, 179);
+              border-radius: 50%;
+              border: none;
+              outline: none;
+              margin: 0 0.25rem;
+              &.left {
+                background-image: url("../assets/images/icon23.png");
+              }
+              &.right {
+                float: right;
+                background-image: url("../assets/images/icon24.png");
+              }
+            }
+          }
+        }
+        &.open {
+          & > .top {
+            & > .to {
+              background-image: url("../assets/images/icon21.png");
+              font-size: 0;
+            }
+            & > .left {
+              display: block;
+            }
+          }
+          & > .bottom {
+            height: 2.7rem;
           }
         }
       }

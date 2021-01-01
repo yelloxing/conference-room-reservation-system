@@ -12,10 +12,14 @@ import router from './route';
 // $rootScope
 import store from './services/store';
 
-// 引入基础样式
+// 引入样式
 import '@hai2007/style/normalize.css';
 import '@hai2007/style/rasterize.css'
 import './assets/styles/common.scss';
+
+// 引入指令
+// 引入title
+import './directives/toggerView';
 
 //引入axios
 import './services/axios';
