@@ -309,7 +309,8 @@ export default {
           let len = list.length
           let between = dateDiff(list[0].beginTime,list[len-1].beginTime,true)
           if(between != list.length - 1){
-            alert('请选择连续的日期')
+            this.$store.state.dialogVisible = true; //错误弹框
+            this.$store.state.message='请选择连续的时间段'; //错误信息
           }else{
             
             //计算连续的时间段是否超过最大预约时长

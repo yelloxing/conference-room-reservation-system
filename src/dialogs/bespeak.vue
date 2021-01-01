@@ -293,6 +293,13 @@ export default {
               return
             }
 
+            if(this.form.date[0].split(' ')[0] != this.form.date[1].split(' ')[0]){
+              this.$store.state.dialogVisible = true; //错误弹框
+              this.$store.state.message='请选择连续的时间段'; //错误信息
+              return
+            }
+
+
             if( this.form.maxUseTime && this.form.maxUseTime != 0 && between > this.form.maxUseTime){
               this.$store.state.dialogVisible = true; //错误弹框
               this.$store.state.message='预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'; //错误信息

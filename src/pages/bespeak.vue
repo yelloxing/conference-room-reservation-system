@@ -166,6 +166,7 @@ export default {
       if(this.params.date){
         this.params.beginTime = dateToStr(this.params.date[0],'-')
         this.params.endTime = dateToStr(this.params.date[1],'-')
+        
       }else{
         this.params.beginTime = ''
         this.params.endTime = ''
