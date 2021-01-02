@@ -144,8 +144,13 @@
             cursor: pointer;
 
             &.selected {
-                background-color: red;
-                color: white;
+                color: red;
+
+                &::before {
+                    content: ".";
+                    font-size: 30px;
+                    position: absolute;
+                }
             }
         }
     }
