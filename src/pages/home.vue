@@ -59,23 +59,24 @@
         </div>
         <div class="bottom">
           <div class="btns">
-            <button class="left">左边</button>
-            <button class="right">右边</button>
+            <button class="left" @click="preWeek">左边</button>
+            <button class="right" @click="nextWeek">右边</button>
           </div>
           <div class="time">
 
             <!-- 外面的日期 -->
             <span
-              v-for="row in dateList"
-              :key="row"
-              :class="{ selected: row == '选择的' }"
+              v-for="(date,i) in item.dates"
+              :key="i"
+              :class="{ selected: activeDateId == i }"
+              @click="activeDate(i)"
             >
-              {{ row }}
+              {{ date.desc}}
 
               <!-- 里面的时间 -->
-              <div class="time-btns" v-show="row == '选择的'">
-                <span v-for="value in timeList" :key="value">
-                  <div>{{ value }}:00</div>
+              <div class="time-btns" v-show="activeDateId == i">
+                <span v-for="(value,ind) in date.times" :key="ind">
+                  <div></div>
 
                   <!-- 小格子选中的话： <div class='active'></div> -->
 
@@ -104,6 +105,7 @@ import {
   dateToStr,
   numToTime,
   dateBetween,
+  getExpectDate
 } from "../services/dateUtil";
 export default {
   data() {
@@ -119,7 +121,7 @@ export default {
       activeMeetingRoomName: "", //选中的会议室名称
       meetingRoomInfoList: [{}, {}, {}, {}], //会议室列表
       appointDate: "", //预约日期
-      activeDateId: "", //当前选中的日期
+      activeDateId: 0, //当前选中的日期
       preselectList: [], //预选列表
     };
   },
@@ -132,22 +134,19 @@ export default {
 
   methods: {
     //查询所有会议室及部门
-    queryAllMeetingRomm() {
-      this.$axios
-        .post("_apigateway/roombooking/api/view/v1/basedata.rst", {
-          domainId: 2,
-        })
-        .then((res) => {
-          if (res.data.resultCode == 0) {
-            this.addressList = res.data.result.data.addresses;
-            this.departmentList = res.data.result.data.departments;
-            this.queryMeetingRoomInfo(); //查询会议室详情
-
-            // this.queryAppointInfo()
-          }
-        });
+    queryAllMeetingRomm(){
+      this.$axios.post('_apigateway/roombooking/api/view/v1/basedata.rst',{
+        "domainId":2
+      }).then(res => {
+        if(res.data.resultCode == 0){
+          this.addressList = res.data.result.data.addresses;
+          this.departmentList = res.data.result.data.departments;
+          this.queryMeetingRoomInfo()  //查询会议室详情
+        }
+      })
     },
-    queryMeetingRoomInfo() {
+    //查询会议室详情
+    queryMeetingRoomInfo(){
       let options = {
         method: "POST",
         params: {
@@ -168,7 +167,7 @@ export default {
     },
 
     //查询会议室预约详细记录
-    queryAppointInfo(list) {
+    queryAppointInfo() {
       let that = this;
       this.meetingRoomInfoList.forEach((item, index1) => {
         item.dates = getFutureWeekDay(dateToStr(that.appointDate));
@@ -197,9 +196,9 @@ export default {
           });
         });
       });
-      console.log(this.meetingRoomInfoList);
     },
 
+    //切换日期id
     activeDate(i) {
       this.activeDateId = i;
       this.meetingRoomInfoList = JSON.parse(
@@ -207,17 +206,42 @@ export default {
       );
     },
 
+    //
+    preWeek(){
+      let preDate = getExpectDate(this.appointDate,-7)
+      this.appointDate = preDate
+      this.queryAppointInfo()
+    },
+    nextWeek(){
+      let preDate = getExpectDate(this.appointDate,7)
+      this.appointDate = preDate
+      this.queryAppointInfo()
+
+    },
+
+    //选择时间
+    activeTime(){
+
+    },
+    
     //切换地点
     changeAddress(row) {
       this.addressId = row ? row.id : "";
       this.queryMeetingRoomInfo();
     },
 
-    goDetail() {
-      this.$router.push("detail");
+    //  会议室介绍
+    goDetail(item) {
+      window.location.href = item.infoUrl
+      // this.$router.push("detail");
     },
-    remind() {
-      this.$router.push("bespeak");
+    remind(item) {
+      let param = {
+          departments:this.departmentList,   //部门
+          date:'',
+          meetingRoomName:item.name
+      }
+      this.$router.push({ name:"bespeak", params:param });
     },
   },
 };

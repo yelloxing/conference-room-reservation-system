@@ -4,7 +4,7 @@
     <form>
       <div>
         <label>会议室名称：</label>
-        <span>红楼105</span>
+        <span>{{form.meetingRoomName}}</span>
       </div>
       <div>
         <label>使用日期：</label>
@@ -16,31 +16,31 @@
       </div>
       <div>
         <label>预订人：</label>
-        <input type="text" placeholder="请输入预订人姓名" />
+        <input type="text" placeholder="请输入预订人姓名" v-model="form.name"/>
       </div>
       <div>
         <label>联系方式：</label>
-        <input type="text" placeholder="请输入预订人联系方式" />
+        <input type="text" placeholder="请输入预订人联系方式" v-model="form.phone"/>
       </div>
       <div>
         <label>联系人：</label>
-        <input type="text" placeholder="请输入联系人姓名" />
+        <input type="text" placeholder="请输入联系人姓名" v-model="form.contact"/>
       </div>
       <div>
         <label>联系方式：</label>
-        <input type="text" placeholder="请输入联系人联系方式" />
+        <input type="text" placeholder="请输入联系人联系方式" v-model="form.contactPhone"/>
       </div>
       <div>
         <label>出席领导：</label>
-        <input type="text" placeholder="请输入出席领导姓名" />
+        <input type="text" placeholder="请输入出席领导姓名" v-model="form.addendLeaders"/>
       </div>
       <div>
         <label>出席人数：</label>
-        <input type="text" placeholder="请输入出席人数" />
+        <input type="text" placeholder="请输入出席人数" v-model="form.attendUsers"/>
       </div>
       <div>
         <label>当前事由：</label>
-        <textarea placeholder="请输入申请事由"></textarea>
+        <textarea placeholder="请输入申请事由" v-model="form.subject"></textarea>
       </div>
       <div>
         <label>添加附件：</label>
@@ -48,7 +48,7 @@
       </div>
       <div>
         <label>备注：</label>
-        <input type="text" placeholder="请输入备注" />
+        <input type="text" placeholder="请输入备注" v-model="form.remark"/>
       </div>
       <div class="btn-list row">
         <div class="col-size-4">
@@ -67,9 +67,19 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+      form:{}
+    };
   },
-  methods: {},
+  created(){
+    this.startupParams()
+  },
+  methods: {
+    //获取路由传参
+    startupParams(){
+      this.form = this.$route.params
+    }
+  },
 };
 </script>
 <style lang="scss" scoped>

@@ -1,3 +1,5 @@
+import { get } from "http";
+
 // 日期是否合法
 export let isValid = function (dateStr) {
     return (new Date(dateStr) + "") != 'Invalid Date';
@@ -40,6 +42,8 @@ export let dateToArray = function (date) {
     ];
 };
 
+
+//获取指定日期一周后的日期
 export let getFutureWeekDay = function(d,filter=true){
     let date = new Date(d) 
     let dateArr = []
@@ -67,7 +71,6 @@ export let getFutureWeekDay = function(d,filter=true){
             'date':dateToStrYM(day),
         }
         desc && (param.desc = desc) 
-        // options.timeList.length > 0 && (param.timeList = options.timeList)
         dateArr.push(param)
     }
     return dateArr
@@ -96,16 +99,17 @@ export let dateToStrYM = function(date){
     return `${m}-${d}`;  
 };
 
-// //根据指定日期获取指定天数后的日期，转为‘月-日’格式
-// export let getDay = function(date,num=0){
-//     let d = date.getDate()
-//     let d1 = new Date( date.setDate(d + num) )
-//     let m = d1.getMonth() + 1
-//     m = m < 10 ? '0' + m : m;  
-//     let day = d1.getDate()
-//     day = day < 10 ? '0' + day : day; 
-//     return `${m}-${day}`
-// };
+//根据指定日期获取指定天数后的日期
+export let getExpectDate = function(date,num=0){
+   let d = new Date(date.replace(/-/g,'/')).getTime()
+   let expect = new Date(d + num * 24 * 60 * 60 * 1000)
+   let y = expect.getFullYear()
+   let M = expect.getMonth()+1
+   let D = expect.getDate()
+   let H = expect.getHours()
+   let m = expect.getMinutes()
+    return `${y}-${getZero(M)}-${getZero(D)} ${getZero(H)}:${getZero(m)}`
+};
 
 //将数字转为时：分  ===>   7 = > 07:00
 export let numToTime = function(time){
