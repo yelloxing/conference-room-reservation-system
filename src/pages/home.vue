@@ -75,12 +75,12 @@
 
               <!-- 里面的时间 -->
               <div class="time-btns" v-show="activeDateId == i">
-                <span v-for="(value,ind) in date.times" :key="ind">
-                  <div></div>
+                <span v-for="(value,ind) in date.times" :key="ind" @click="preselectClick(value)">
+                  <div>{{value.time}}</div>
 
                   <!-- 小格子选中的话： <div class='active'></div> -->
 
-                  <div></div>
+                  <div :class="{'active':value.active,'preselect':value.preselect}" ></div>
                 </span>
 
                 <!-- 最后一个是辅助对齐的 -->
@@ -196,6 +196,7 @@ export default {
           });
         });
       });
+      console.log(this.meetingRoomInfoList)
     },
 
     //切换日期id
@@ -206,17 +207,41 @@ export default {
       );
     },
 
-    //
+    //前一周
     preWeek(){
       let preDate = getExpectDate(this.appointDate,-7)
       this.appointDate = preDate
       this.queryAppointInfo()
     },
+    //后一周
     nextWeek(){
       let preDate = getExpectDate(this.appointDate,7)
       this.appointDate = preDate
       this.queryAppointInfo()
 
+    },
+    preselectClick(value,item){
+      if(value.active){
+        return
+      }
+
+      let i
+      let select = this.preselectList.find((row,index) => {
+        if(row.fullTime == value.fullTime){
+          i = index
+          return true
+        }
+        return false
+      })
+
+      if(select){
+        this.preselectList.splice(i,1)
+        this.$set(value,'preselect',false)
+      }else{
+        this.preselectList.push(value)
+        this.$set(value,'preselect',true)
+      }
+      this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
     },
 
     //选择时间
@@ -433,6 +458,10 @@ export default {
                     border-radius: 0.05rem;
                     &.active {
                       background-color: #dc1c19;
+                    }
+                    &.preselect{
+                      border:1px solid #dc1c19;
+                      box-sizing: border-box;
                     }
                   }
                 }
