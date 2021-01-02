@@ -24,6 +24,11 @@ import './directives/toggerView';
 //引入axios
 import './services/axios';
 
+// 引入日历
+import "./directives/calendar";
+import "./directives/calendar2";
+import "./assets/styles/calendar.scss";
+
 //根对象
 window.vm = new Vue({
 

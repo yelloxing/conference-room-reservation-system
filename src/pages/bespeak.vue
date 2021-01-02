@@ -1,5 +1,5 @@
 <template>
-  <div class="bespeak-view container">
+  <div class="bespeak-view container select-frame">
     <h2>会议室预约</h2>
     <form>
       <div>
@@ -8,7 +8,7 @@
       </div>
       <div>
         <label>使用日期：</label>
-        <input type="text" placeholder="请选择使用日期" />
+        <input type="text" placeholder="请选择使用日期" v-calendar2 value='2020-11-06 07:00-10:00'/>
       </div>
       <div>
         <label>申请单位：</label>
@@ -86,6 +86,7 @@ export default {
 .bespeak-view {
   background-color: #ffffff;
   border-radius: 0.03rem;
+  position: relative;
   & > h2 {
     text-align: center;
     line-height: 4em;

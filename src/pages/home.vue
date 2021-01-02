@@ -401,6 +401,7 @@ export default {
               border: none;
               outline: none;
               background-color: transparent;
+              color:transparent;
               background-image: url("../assets/images/icon15.png");
               background-size: 60% auto;
               background-position: center center;
