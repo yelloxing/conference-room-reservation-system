@@ -7,6 +7,10 @@
         <div class="right">
           <a
             href="javascript:void(0)"
+            v-if="loginFlag">用户:{{userName}}</a
+          >
+          <a
+            href="javascript:void(0)"
             class="personal-center"
             @click="goBespeak()"
             v-if="loginFlag">我的预约</a
@@ -55,7 +59,7 @@
       width="30%">
       <span>{{$store.state.message}}</span>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="$store.state.dialogVisible = false">确定</el-button>
+        <el-button @click="handleConfirm">确定</el-button>
       </span>
     </el-dialog>
 
@@ -72,12 +76,17 @@ export default {
     return {
       // 全部弹框
       all_dialog: dialogs,
-      loginFlag:false
+      loginFlag:false,
+      userName:'',
+      userinfo: sessionStorage.getItem('logininfo')
     };
   },
   created(){
-    if(sessionStorage.getItem('logininfo')){
+    let userinfo = sessionStorage.getItem('logininfo')
+    if(userinfo){
       this.loginFlag = true
+      let data = JSON.parse(userinfo).data
+      this.userName = data.userName
     }
   },
   methods: {
@@ -89,8 +98,7 @@ export default {
       this.$router.push("bespeak");
     },
     login(){
-      // window.location.href = "/"
-      window.open('/')
+      window.open("http://218.94.154.34:54392/")
     },
     logout(){
       let logininfo = sessionStorage.getItem('logininfo')
@@ -98,7 +106,11 @@ export default {
       window.location.href = userinfo.logoutUrl
     },
     handleConfirm(){
-
+      this.$store.state.dialogVisible = false
+      if(this.$store.state.loginFlag){
+        this.$store.state.loginFlag = false
+        window.open("http://218.94.154.34:54392/")
+      }
     }
   },
 };

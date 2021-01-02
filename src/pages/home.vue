@@ -17,7 +17,7 @@
         <p>
           4、其他特殊情况或特殊需要用户可联系服务中心，联系电话：0512-65221621。
         </p>
-        <a href="javascript:void(0)">了解更多</a>
+        <a href="javascript:void(0)" @click="knowmore">了解更多</a>
       </div>
     </header>
 
@@ -127,6 +127,10 @@ export default {
     this.searchAll()  //初始化查询
   },
   methods: {
+    //了解更多按钮
+    knowmore(){
+      window.location.href = "/_d2/c6/20201227/i8.phtml" 
+    },
     //日期切换
     changeDate(item,date,index){
       let row = this.meetingRoomInfoList[index]   
@@ -293,11 +297,14 @@ export default {
     remind(item){
       //如果未登录，需先登录
       if(!sessionStorage.getItem('logininfo')){
-        alert('请先登录！')
+        this.$store.state.dialogVisible = true; //错误弹框
+        this.$store.state.message='请先登录'; //错误信息
+        this.$store.state.loginFlag = true
       }else{
         //已登录，未选择时间点
         if(this.preselectList.length == 0){
-          alert('请选择右侧时间段进行预约！')
+          this.$store.state.dialogVisible = true; //错误弹框
+        this.$store.state.message='请选择右侧时间进行预约'; //错误信息
         }else{
           //计算选定的时间点是否是连续的。  
           //计算方式：一个时间点差值是一个小时。先按时间排序，计算最后一条的开始时间和第一条的开始时间差是否等于数组长度，是则连续

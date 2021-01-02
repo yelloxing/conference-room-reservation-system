@@ -26,24 +26,20 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <!-- <el-form-item
-            label="使用日期："
-            class="col-size-6 select-frame"
-            v-if="flag == 'add'"
-            prop="date"
-          >
-            <el-input type="text" placeholder="请输入使用日期" v-model="form.date" disabled/>
-          </el-form-item> -->
           <el-form-item  label="使用日期：" class="col-size-6 select-frame"  prop="date">
             <el-date-picker
+              ref="datepicker"
               v-model="form.date"
               class="date-picker"
               type="datetimerange"
               range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              align="right">
+              align="right"
+              :default-time="['07:00:00', '21:00:00']"
+              @change="changeDate">
             </el-date-picker>
+            <div class="preTime" @click="triggerDate">{{fullTime}}</div>
           </el-form-item>
 
           <el-form-item label="预定人：" class="col-size-6" prop="name">
@@ -153,7 +149,7 @@
 </template>
 <script>
 import qs from "qs";
-import {dateDiff} from '../services/dateUtil'
+import {dateDiff,millisecondToStr,millisecondToHm,dateToStr} from '../services/dateUtil'
 export default {
   data() {
     return {
@@ -170,6 +166,7 @@ export default {
         remark: "",
         filename: "",
       },
+      fullTime:"",
       file:'',
       flag:'',
       rules:{
@@ -181,6 +178,15 @@ export default {
         subject:[{required:true,message:'请输入申请事由',trigger:'blur'}],
       }
     }
+  },
+  computed:{
+    // fullTime(){
+    //   if(this.form.date[0] instanceof Date){
+    //     return millisecondToStr(this.form.date[0].getTime()) + '-' + millisecondToHm(this.form.date[1].getTime())
+    //   }else{
+    //     return this.form.date[0] + '-' + this.form.date[1].split(' ')[1]
+    //   }
+    // }
   },
   created(){
     let data = this.$store.state.dialogs[0].data
@@ -196,7 +202,11 @@ export default {
     this.$set(this.form,'attendUsers',data.attendUsers)
     this.$set(this.form,'subject',data.subject)
     this.$set(this.form,'remark',data.remark)
+    this.$set(this.form,'beginTime',data.beginTime)
+    this.$set(this.form,'endTime',data.endTime)
     this.$set(this.form,'date',[data.beginTime,data.endTime])
+
+    this.fullTime = this.form.date[0] + '-' + this.form.date[1].split(' ')[1]
 
     this.flag = data.flag || 'add'
     if(this.flag == 'add'){
@@ -227,6 +237,36 @@ export default {
         _event.initEvent(eventType, true, false);
         dom.dispatchEvent(_event);
       }
+    },
+    changeDate(){
+      let begin = this.form.date[0],end = this.form.date[1]
+      if(this.form.date[0] instanceof Date){
+        if(dateToStr(begin) !=  dateToStr(end) ){
+          this.$store.state.dialogVisible = true; //错误弹框
+          this.$store.state.message='请选择连续的时间段'; //错误信息
+          this.form.date = [this.form.beginTime,this.form.endTime]
+          return
+        }else{
+          this.$set(this.form,'beginTime',this.form.date[0])
+          this.$set(this.form,'endTime',this.form.date[1])
+          this.fullTime = millisecondToStr(this.form.date[0].getTime()) + '-' + millisecondToHm(this.form.date[1].getTime())
+        }
+      }else{
+        if(begin.split(' ')[0] != end.split(' ')[0]){
+          this.$store.state.dialogVisible = true; //错误弹框
+          this.$store.state.message='请选择连续的时间段'; //错误信息
+          this.form.date = [this.form.beginTime,this.form.endTime]
+          return
+        }else{
+          this.$set(this.form,'beginTime',this.form.date[0])
+          this.$set(this.form,'endTime',this.form.date[1])
+          this.fullTime = this.form.date[0] + '-' + this.form.date[1].split(' ')[1]
+        }
+      }
+      
+    },
+    triggerDate(){
+      this.$refs.datepicker.handleClickIcon()
     },
     //文件上传
     getFile(event) {
@@ -293,13 +333,6 @@ export default {
               return
             }
 
-            if(this.form.date[0].split(' ')[0] != this.form.date[1].split(' ')[0]){
-              this.$store.state.dialogVisible = true; //错误弹框
-              this.$store.state.message='请选择连续的时间段'; //错误信息
-              return
-            }
-
-
             if( this.form.maxUseTime && this.form.maxUseTime != 0 && between > this.form.maxUseTime){
               this.$store.state.dialogVisible = true; //错误弹框
               this.$store.state.message='预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'; //错误信息
@@ -316,8 +349,8 @@ export default {
               this.$store.state.dialogVisible = true; //错误弹框
               this.$store.state.message='当前时间已过最大停止预约时间:'+this.form.maxStopTime + '小时'; //错误信息
               return
-            }
-
+            } 
+            
           }
 
           if(_this.file){  //存在文件，先执行文件上传，再执行提交
@@ -531,10 +564,23 @@ export default {
   }
   .date-picker{
     width: 100%;
+    opacity: 0;
     
     /deep/.el-range-separator{
       width: 10%;
     }
+  }
+
+  .preTime{
+    position: absolute;
+    top: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 10px;
+    height: 40px;
+    line-height: 40px;
+    border: 1px solid #DCDFE6;
+    border-radius: 4px;
   }
 }
 </style>

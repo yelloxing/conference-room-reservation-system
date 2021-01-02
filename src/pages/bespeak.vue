@@ -20,6 +20,13 @@
             @change="changeDate">
           </el-date-picker>
           </div>
+          <div class="col-size-6 select-frame">
+            <label> 状态：</label>
+            <select v-model="status" @change="changeStatus">
+              <option value="">全部</option>
+              <option v-for="(key,value) in statusList" :key="key" :value="value">{{key}}</option>
+            </select>
+          </div>
           <div class="col-size-12">
             <label> 地点： </label>
             <button :class="{'selected':!activeMeetingRoomId}" @click="selectMeetingRoom()">全部</button>
@@ -75,6 +82,7 @@ export default {
       },
       "meetingRoomList":[],
       "activeMeetingRoomId":"",
+      "status":'',
       "statusList":{
         "0":"待审核",
         "1":"审核通过",
@@ -123,6 +131,7 @@ export default {
           "projectId":12,
           "keywords":this.params.keywords,
           "addressId":this.activeMeetingRoomId,
+          "status":this.status,
           "beginTime":this.params.beginTime,
           "endTime":this.params.endTime  
         },
@@ -174,6 +183,12 @@ export default {
       this.getInfo()
     },
 
+
+    //状态切换
+    changeStatus(){
+      this.getInfo()
+    },
+
     //编辑
     edit(item){
       if(item.status != '-1'){
@@ -204,7 +219,7 @@ export default {
           this.$store.state.dialogVisible = true; //错误弹框
           this.$store.state.message='已超过预约开始时间'; //错误信息
           return
-        }else if(item.maxCancleTime && between < item.maxCancleTime){
+        }else if(item.maxCancleTime && item.maxCancleTime != 0 && between < item.maxCancleTime){
           this.$store.state.dialogVisible = true; //错误弹框
           this.$store.state.message='已超过允许取消时间'+item.maxCancleTime + '小时'; //错误信息
           return

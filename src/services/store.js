@@ -16,6 +16,7 @@ let state = {
     loading:false, //loading
     dialogVisible:false, //错误弹框
     message:'', //错误信息
+    loginFlag:false,  //是否跳转登录
     // 记录当前打开的弹框
     dialogs: [],
     commitFlag:false  //提交记录
