@@ -419,7 +419,7 @@ Vue.directive('calendar2', {
             window.setTimeout(function () {
                 if (isFocus) return;
 
-                // close();
+                close();
 
             }, 200);
 
