@@ -9,7 +9,9 @@
       <div class="button">
         <span> 地点： </span>
         <div>
-          <button :class="{ selected: !addressId }" @click="changeAddress">全部</button>
+          <button :class="{ selected: !addressId }" @click="changeAddress">
+            全部
+          </button>
           <button
             v-for="(row, index) in addressList"
             :key="index"
@@ -51,7 +53,7 @@
         <div class="top">
           <div class="left">
             <span class="title">预约情况</span>
-            <input type="text" v-model="appointDate"/>
+            <input type="text" v-model="appointDate" />
           </div>
           <span class="to" v-togger-view>点击查看预约的情况</span>
         </div>
@@ -60,22 +62,31 @@
             <button class="left">左边</button>
             <button class="right">右边</button>
           </div>
-           <div class="time">
-            <span>今天</span>
-            <span>昨天</span>
-            <span>明天</span>
-            <span>12:17</span>
-            <span>12:18</span>
-            <span>12:19</span>
-            <span>12:20</span>
-          </div>
-          <div class="time-btns">
-            <span v-for="value in timeList" :key="value">
-              <div>{{ value }}:00</div>
-              <!-- class='active' -->
-              <div></div>
+          <div class="time">
+
+            <!-- 外面的日期 -->
+            <span
+              v-for="row in dateList"
+              :key="row"
+              :class="{ selected: row == '选择的' }"
+            >
+              {{ row }}
+
+              <!-- 里面的时间 -->
+              <div class="time-btns" v-show="row == '选择的'">
+                <span v-for="value in timeList" :key="value">
+                  <div>{{ value }}:00</div>
+
+                  <!-- 小格子选中的话： <div class='active'></div> -->
+
+                  <div></div>
+                </span>
+
+                <!-- 最后一个是辅助对齐的 -->
+                <span></span>
+              </div>
+
             </span>
-            <span></span>
           </div>
         </div>
       </div>
@@ -87,107 +98,119 @@
   </div>
 </template>
 <script>
-import {getFutureWeekDay,millisecondToDateStr,dateToStr,numToTime,dateBetween} from '../services/dateUtil'
+import {
+  getFutureWeekDay,
+  millisecondToDateStr,
+  dateToStr,
+  numToTime,
+  dateBetween,
+} from "../services/dateUtil";
 export default {
   data() {
     return {
       today: new Date(), //今天日期
-      // dateList:[], //一周日期列表
+      dateList: ["今天", "明天", "12-17", "选择的", "12-18", "12-19", "12-20"], //一周日期列表
       timeList: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
       keyword: "", //会议室名称搜索框
       addressList: [], //会议室地点列表
       departmentList: [], //部门数组
       addressId: "", //选中的会议室id
-      keywords:"", //搜索会议室名称关键字
+      keywords: "", //搜索会议室名称关键字
       activeMeetingRoomName: "", //选中的会议室名称
-      meetingRoomInfoList: [{},{},{},{}], //会议室列表
-      appointDate:'',//预约日期
-      activeDateId:'', //当前选中的日期
+      meetingRoomInfoList: [{}, {}, {}, {}], //会议室列表
+      appointDate: "", //预约日期
+      activeDateId: "", //当前选中的日期
       preselectList: [], //预选列表
     };
   },
 
-  created(){
-    this.queryAllMeetingRomm()
+  created() {
+    this.queryAllMeetingRomm();
     // this.appointDate = this.today  //默认为今天
-    this.appointDate = '2021-01-01'
+    this.appointDate = "2021-01-01";
   },
 
   methods: {
     //查询所有会议室及部门
-    queryAllMeetingRomm(){
-      this.$axios.post('_apigateway/roombooking/api/view/v1/basedata.rst',{
-        "domainId":2
-      }).then(res => {
-        if(res.data.resultCode == 0){
-          this.addressList = res.data.result.data.addresses;
-          this.departmentList = res.data.result.data.departments;
-          this.queryMeetingRoomInfo()  //查询会议室详情
+    queryAllMeetingRomm() {
+      this.$axios
+        .post("_apigateway/roombooking/api/view/v1/basedata.rst", {
+          domainId: 2,
+        })
+        .then((res) => {
+          if (res.data.resultCode == 0) {
+            this.addressList = res.data.result.data.addresses;
+            this.departmentList = res.data.result.data.departments;
+            this.queryMeetingRoomInfo(); //查询会议室详情
 
-          // this.queryAppointInfo()
-        }
-      })
+            // this.queryAppointInfo()
+          }
+        });
     },
-    queryMeetingRoomInfo(){
+    queryMeetingRoomInfo() {
       let options = {
-        method:"POST",
-        params:{
-          "domainId":2,
-          "projectId":12,
-          "addressId":this.addressId,
-          "keywords":this.keywords
+        method: "POST",
+        params: {
+          domainId: 2,
+          projectId: 12,
+          addressId: this.addressId,
+          keywords: this.keywords,
         },
-        url:'_apigateway/roombooking/api/view/v1/rooms.rst'
+        url: "_apigateway/roombooking/api/view/v1/rooms.rst",
       };
-      this.$axios(options).then(res => {
-        if(res.data.code == 0){
-          this.meetingRoomInfoList = res.data.data
+      this.$axios(options).then((res) => {
+        if (res.data.code == 0) {
+          this.meetingRoomInfoList = res.data.data;
 
-          this.queryAppointInfo()
+          this.queryAppointInfo();
         }
-      })
+      });
     },
 
     //查询会议室预约详细记录
-    queryAppointInfo(list){
-      let that = this
-      this.meetingRoomInfoList.forEach((item,index1) => {
-        item.dates = getFutureWeekDay(dateToStr(that.appointDate))
-        item.dates.forEach(date => {
-          date.times = that.timeList.map(time => {
+    queryAppointInfo(list) {
+      let that = this;
+      this.meetingRoomInfoList.forEach((item, index1) => {
+        item.dates = getFutureWeekDay(dateToStr(that.appointDate));
+        item.dates.forEach((date) => {
+          date.times = that.timeList.map((time) => {
             let param = {
-              "time" : numToTime(time),
-              "fullTime" : `${date.fullDate} ${numToTime(time)}`,
-              "beginTime": `${date.fullDate} ${numToTime(time)}`,
-              "endTime":`${date.fullDate} ${numToTime(time+1)}`
-            }
-            let millisecond = new Date(param.fullTime).getTime()
+              time: numToTime(time),
+              fullTime: `${date.fullDate} ${numToTime(time)}`,
+              beginTime: `${date.fullDate} ${numToTime(time)}`,
+              endTime: `${date.fullDate} ${numToTime(time + 1)}`,
+            };
+            let millisecond = new Date(param.fullTime).getTime();
 
-            item.appointments && item.appointments.forEach(appointment=>{
-              if(millisecond >= appointment.beginTime && millisecond < appointment.endTime){
-                param.active = true
-                return
-              }
-            })
+            item.appointments &&
+              item.appointments.forEach((appointment) => {
+                if (
+                  millisecond >= appointment.beginTime &&
+                  millisecond < appointment.endTime
+                ) {
+                  param.active = true;
+                  return;
+                }
+              });
 
-            return param
-          })
-        })
-
-      })
-      console.log(this.meetingRoomInfoList)
+            return param;
+          });
+        });
+      });
+      console.log(this.meetingRoomInfoList);
     },
 
-
-    activeDate(i){
-     this.activeDateId = i
-     this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
+    activeDate(i) {
+      this.activeDateId = i;
+      this.meetingRoomInfoList = JSON.parse(
+        JSON.stringify(this.meetingRoomInfoList)
+      );
     },
 
     //切换地点
-    changeAddress(row){
-      this.addressId = row ? row.id : ''
-      this.queryMeetingRoomInfo()
+    changeAddress(row) {
+      this.addressId = row ? row.id : "";
+      this.queryMeetingRoomInfo();
     },
 
     goDetail() {
@@ -341,35 +364,55 @@ export default {
           overflow: hidden;
           transition-duration: 1s;
           transition-property: height;
-          & > .time-btns {
-            text-align: center;
-            padding-top: 1em;
-            & > span {
-              display: inline-block;
-              width: 12%;
-              line-height: 2em;
-              & > div:last-child {
-                display: inline-block;
-                width: 0.36rem;
-                height: 0.36rem;
-                margin: 0.06rem 0.04rem;
-                background-color: #f5bfbf;
-                border-radius: 0.05rem;
-                &.active {
-                  background-color: #dc1c19;
-                }
-              }
-            }
-          }
           & > .time {
             text-align: center;
             white-space: nowrap;
             margin: 0 0.25rem;
             line-height: 3em;
             border-bottom: 1px solid #555555;
+            position: relative;
             & > span {
               display: inline-block;
               width: 13%;
+              &.selected {
+                color: #dc1c19;
+                &::before {
+                  content: " ";
+                  display: inline-block;
+                  width: 7px;
+                  height: 7px;
+                  background-color: #dc1c19;
+                  border-radius: 50%;
+                  position: absolute;
+                  margin-left: 22px;
+                }
+              }
+              & > .time-btns {
+                text-align: center;
+                padding-top: 1em;
+                position: absolute;
+                left: 0;
+                top: 0.45rem;
+                width: 6rem;
+                white-space: normal;
+                color: #333333;
+                & > span {
+                  display: inline-block;
+                  width: 12%;
+                  line-height: 2em;
+                  & > div:last-child {
+                    display: inline-block;
+                    width: 0.36rem;
+                    height: 0.36rem;
+                    margin: 0.06rem 0.04rem;
+                    background-color: #f5bfbf;
+                    border-radius: 0.05rem;
+                    &.active {
+                      background-color: #dc1c19;
+                    }
+                  }
+                }
+              }
             }
           }
           & > .btns {
