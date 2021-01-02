@@ -21,8 +21,13 @@ import './assets/styles/common.scss';
 // 引入title
 import './directives/toggerView';
 
+import './directives/input-check';
+
 //引入axios
 import './services/axios';
+
+// 引入表单校验结果查询方法
+import inputCheck from './services/input-check'; Vue.use(inputCheck);
 
 // 引入日历
 import "./directives/calendar";

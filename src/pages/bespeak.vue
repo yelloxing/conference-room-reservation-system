@@ -1,14 +1,20 @@
 <template>
   <div class="bespeak-view container select-frame">
     <h2>会议室预约</h2>
-    <form>
+    <form name="bespeakform" autocomplete="off" novalidate>
       <div>
         <label>会议室名称：</label>
-        <span>{{form.meetingRoomName}}</span>
+        <span>{{ form.meetingRoomName }}</span>
       </div>
       <div>
         <label>使用日期：</label>
-        <input type="text" placeholder="请选择使用日期" v-calendar2 value='2020-11-06 07:00-10:00'/>
+        <input
+          type="text"
+          v-input-check="[form.date, 'required']"
+          placeholder="请选择使用日期"
+          v-model="form.date"
+          v-calendar2
+        />
       </div>
       <div>
         <label>申请单位：</label>
@@ -16,31 +22,59 @@
       </div>
       <div>
         <label>预订人：</label>
-        <input type="text" placeholder="请输入预订人姓名" v-model="form.name"/>
+        <input
+          type="text"
+          v-input-check="[form.name, 'required']"
+          placeholder="请输入预订人姓名"
+          v-model="form.name"
+        />
       </div>
       <div>
         <label>联系方式：</label>
-        <input type="text" placeholder="请输入预订人联系方式" v-model="form.phone"/>
+        <input
+          type="text"
+          placeholder="请输入预订人联系方式"
+          v-model="form.phone"
+        />
       </div>
       <div>
         <label>联系人：</label>
-        <input type="text" placeholder="请输入联系人姓名" v-model="form.contact"/>
+        <input
+          type="text"
+          placeholder="请输入联系人姓名"
+          v-model="form.contact"
+        />
       </div>
       <div>
         <label>联系方式：</label>
-        <input type="text" placeholder="请输入联系人联系方式" v-model="form.contactPhone"/>
+        <input
+          type="text"
+          placeholder="请输入联系人联系方式"
+          v-model="form.contactPhone"
+        />
       </div>
       <div>
         <label>出席领导：</label>
-        <input type="text" placeholder="请输入出席领导姓名" v-model="form.addendLeaders"/>
+        <input
+          type="text"
+          placeholder="请输入出席领导姓名"
+          v-model="form.addendLeaders"
+        />
       </div>
       <div>
         <label>出席人数：</label>
-        <input type="text" placeholder="请输入出席人数" v-model="form.attendUsers"/>
+        <input
+          type="text"
+          placeholder="请输入出席人数"
+          v-model="form.attendUsers"
+        />
       </div>
       <div>
         <label>当前事由：</label>
-        <textarea placeholder="请输入申请事由" v-model="form.subject"></textarea>
+        <textarea
+          placeholder="请输入申请事由"
+          v-model="form.subject"
+        ></textarea>
       </div>
       <div>
         <label>添加附件：</label>
@@ -48,7 +82,7 @@
       </div>
       <div>
         <label>备注：</label>
-        <input type="text" placeholder="请输入备注" v-model="form.remark"/>
+        <input type="text" placeholder="请输入备注" v-model="form.remark" />
       </div>
       <div class="btn-list row">
         <div class="col-size-4">
@@ -58,7 +92,7 @@
           <button>重置</button>
         </div>
         <div class="col-size-4">
-          <button>确认预约</button>
+          <button @click="doBespeak()">确认预约</button>
         </div>
       </div>
     </form>
@@ -68,17 +102,30 @@
 export default {
   data() {
     return {
-      form:{}
+      form: {},
     };
   },
-  created(){
-    this.startupParams()
+  created() {
+    this.startupParams();
   },
   methods: {
     //获取路由传参
-    startupParams(){
-      this.form = this.$route.params
-    }
+    startupParams() {
+      this.form = this.$route.params;
+    },
+    doBespeak() {
+      let ERROR = this.$error("bespeakform");
+      // 如果表单不合法
+      if (!ERROR.isValiadte()) {
+        let first = ERROR.first();
+        alert(first.$error);
+        first.$el.focus();
+        return;
+      }
+
+      // todo
+      // 下面是业务代码
+    },
   },
 };
 </script>
@@ -96,6 +143,14 @@ export default {
   & > form {
     & > div {
       margin-top: 0.2rem;
+      &.required-red-star {
+        &::before {
+          content: "*";
+          position: absolute;
+          left: 12px;
+          color: red;
+        }
+      }
       & > label {
         display: inline-block;
         width: 1.4rem;
@@ -111,6 +166,9 @@ export default {
         border-radius: 0.05rem;
         padding: 0 0.05rem;
         border: 1px solid #b2b2bd;
+        &.v-invalid {
+          border: 1px solid red;
+        }
       }
       & > textarea {
         width: 4.8rem;
