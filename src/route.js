@@ -12,6 +12,7 @@ const router = new VueRouter({
 
       // 主页
       path: '/home',
+      name:'home',
       component: resolve => require(['./pages/home.vue'], resolve)
 
     },
@@ -19,6 +20,7 @@ const router = new VueRouter({
 
       // 我的预约
       path: '/bespeak',
+      name:'bespeak',
       component: resolve => require(['./pages/bespeak.vue'], resolve)
 
     },
@@ -26,6 +28,7 @@ const router = new VueRouter({
 
       // 会议室详情
       path: '/detail',
+      name:'detail',
       component: resolve => require(['./pages/detail.vue'], resolve)
 
     },

@@ -7,6 +7,11 @@
         <div class="right">
           <a
             href="javascript:void(0)"
+            v-if="$route.name == 'bespeak'"
+            @click="goHome()">首页</a
+          >
+          <a
+            href="javascript:void(0)"
             v-if="loginFlag">用户:{{userName}}</a
           >
           <a
@@ -111,6 +116,9 @@ export default {
         this.$store.state.loginFlag = false
         window.open("http://218.94.154.34:54392/")
       }
+    },
+    goHome(){
+      this.$router.push('/home')
     }
   },
 };

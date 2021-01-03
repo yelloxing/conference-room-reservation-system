@@ -381,7 +381,7 @@ export default {
                   contactPhone:_this.form.contactPhone,
                   attendLeaders:_this.form.attendLeaders,
                   attendUsers:_this.form.attendUsers,
-                  resourceId:_this.flag == 'add' ? _this.form.meetingRoomId : _this.form.resourceId,
+                  resourceId:_this.form.resourceId,
                   id:_this.form.recordId,
                   subject:_this.form.subject,
                   remark:_this.form.remark,
