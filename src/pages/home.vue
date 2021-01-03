@@ -53,14 +53,14 @@
         <div class="top">
           <div class="left select-frame">
             <span class="title">预约情况</span>
-            <input type="text" v-model="appointDate" v-calendar/>
+            <input type="text" v-model="item.appointDate" v-calendar @input="changeDate"/>
           </div>
           <span class="to" v-togger-view>点击查看预约的情况</span>
         </div>
         <div class="bottom">
           <div class="btns">
-            <button class="left" @click="preWeek">左边</button>
-            <button class="right" @click="nextWeek">右边</button>
+            <button class="left" @click="preWeek(item)">左边</button>
+            <button class="right" @click="nextWeek(item)">右边</button>
           </div>
           <div class="time">
 
@@ -68,13 +68,13 @@
             <span
               v-for="(date,i) in item.dates"
               :key="i"
-              :class="{ selected: activeDateId == i }"
-              @click="activeDate(i)"
+              :class="{ selected: item.activeDateId == i }"
+              @click="activeDate(item,i)"
             >
               {{ date.desc}}
 
               <!-- 里面的时间 -->
-              <div class="time-btns" v-show="activeDateId == i">
+              <div class="time-btns" v-show="item.activeDateId == i">
                 <span v-for="(value,ind) in date.times" :key="ind" @click="preselectClick(value)">
                   <div>{{value.time}}</div>
 
@@ -120,7 +120,6 @@ export default {
       keywords: "", //搜索会议室名称关键字
       activeMeetingRoomName: "", //选中的会议室名称
       meetingRoomInfoList: [{}, {}, {}, {}], //会议室列表
-      appointDate: "", //预约日期
       activeDateId: 0, //当前选中的日期
       preselectList: [], //预选列表
     };
@@ -129,7 +128,7 @@ export default {
   created() {
     this.queryAllMeetingRomm();
     // this.appointDate = this.today  //默认为今天
-    this.appointDate = "2021-01-01";
+    // this.appointDate = "2021-01-01";
   },
 
   methods: {
@@ -170,7 +169,8 @@ export default {
     queryAppointInfo() {
       let that = this;
       this.meetingRoomInfoList.forEach((item, index1) => {
-        item.dates = getFutureWeekDay(dateToStr(that.appointDate));
+        item.activeDateId = 0
+        item.dates = getFutureWeekDay(dateToStr(item.appointDate || this.today));
         item.dates.forEach((date) => {
           date.times = that.timeList.map((time) => {
             let param = {
@@ -200,23 +200,28 @@ export default {
     },
 
     //切换日期id
-    activeDate(i) {
-      this.activeDateId = i;
+    activeDate(item,i) {
+      item.activeDateId = i;
       this.meetingRoomInfoList = JSON.parse(
         JSON.stringify(this.meetingRoomInfoList)
       );
     },
 
+    //日历日期切换
+    changeDate(){
+      this.queryAppointInfo()
+    },
+
     //前一周
-    preWeek(){
-      let preDate = getExpectDate(this.appointDate,-7)
-      this.appointDate = preDate
+    preWeek(item){
+      let preDate = getExpectDate(item.appointDate,-7)
+      item.appointDate = preDate
       this.queryAppointInfo()
     },
     //后一周
-    nextWeek(){
-      let preDate = getExpectDate(this.appointDate,7)
-      this.appointDate = preDate
+    nextWeek(item){
+      let preDate = getExpectDate(item.appointDate,7)
+      item.appointDate = preDate
       this.queryAppointInfo()
 
     },
@@ -244,11 +249,6 @@ export default {
       console.log(this.preselectList)
       this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
     },
-
-    //选择时间
-    activeTime(){
-
-    },
     
     //切换地点
     changeAddress(row) {
@@ -259,7 +259,6 @@ export default {
     //  会议室介绍
     goDetail(item) {
       window.location.href = item.infoUrl
-      // this.$router.push("detail");
     },
     remind(item) {
 
@@ -292,8 +291,9 @@ export default {
 
       let param = {
           departments:this.departmentList,   //部门
-          date:'',
-          meetingRoomName:item.name
+          date:arr[0].beginTime + '-' + arr[arr.length - 1].endTime.split(' ')[1],
+          meetingRoomName:item.name,
+          departmentList:this.departmentList
       }
       this.$router.push({ name:"bespeak", params:param });
     },

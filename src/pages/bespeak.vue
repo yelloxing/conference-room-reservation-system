@@ -14,11 +14,17 @@
           placeholder="请选择使用日期"
           v-model="form.date"
           v-calendar2
+          @input="changeDate"
         />
       </div>
       <div>
         <label>申请单位：</label>
-        <input type="text" placeholder="请输入申请单位" />
+        <!-- <input type="text" placeholder="请输入申请单位" /> -->
+        <select v-model="form.departmentId">
+          <option v-for="(row,index) in form.departmentList" :key="index" :value="row.id">
+            {{row.name}}
+          </option>
+        </select>
       </div>
       <div>
         <label>预订人：</label>
@@ -112,6 +118,11 @@ export default {
     //获取路由传参
     startupParams() {
       this.form = this.$route.params;
+      console.log(this.form)
+    },
+    //日期切换
+    changeDate(){
+      console.log(this.form.date)
     },
     doBespeak() {
       let ERROR = this.$error("bespeakform");
@@ -125,11 +136,15 @@ export default {
         return;
       }
 
+
+
+
       // todo
       // 下面是业务代码
     },
   },
 };
+
 </script>
 <style lang="scss" scoped>
 .bespeak-view {
@@ -171,6 +186,14 @@ export default {
         &.v-invalid {
           border: 1px solid red;
         }
+      }
+      & > select{
+        width: 4.8rem;
+        height: 3em;
+        border-radius: 0.05rem;
+        padding: 0 0.05rem;
+        border: 1px solid #b2b2bd;
+        background: #fff;
       }
       & > textarea {
         width: 4.8rem;
