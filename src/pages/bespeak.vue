@@ -161,7 +161,7 @@ export default {
       // this.form = this.$route.params;
       console.log(this.$route.params);
       this.form.departmentId = this.$route.params.departments[0].id;
-      this.form.resourceId = this.$route.params.meetingRoomId;
+      this.form.meetingRoomId = this.$route.params.meetingRoomId;
       this.form.date = this.$route.params.date;
       this.form.name = this.$route.params.name;
       this.form.phone = this.$route.params.phone;

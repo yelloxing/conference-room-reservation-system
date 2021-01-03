@@ -293,8 +293,10 @@ export default {
           departments:this.departmentList,   //部门
           date:arr[0].beginTime + '-' + arr[arr.length - 1].endTime.split(' ')[1],
           meetingRoomName:item.name,
+          meetingRoomId:item.id,
           departmentList:this.departmentList
       }
+
       this.$router.push({ name:"bespeak", params:param });
     },
   },
