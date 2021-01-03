@@ -21,8 +21,12 @@
         <label>申请单位：</label>
         <!-- <input type="text" placeholder="请输入申请单位" /> -->
         <select v-model="form.departmentId">
-          <option v-for="(row,index) in form.departmentList" :key="index" :value="row.id">
-            {{row.name}}
+          <option
+            v-for="(row, index) in form.departmentList"
+            :key="index"
+            :value="row.id"
+          >
+            {{ row.name }}
           </option>
         </select>
       </div>
@@ -40,6 +44,7 @@
         <input
           type="text"
           placeholder="请输入预订人联系方式"
+          v-input-check="[form.phone, 'required']"
           v-model="form.phone"
         />
       </div>
@@ -48,6 +53,7 @@
         <input
           type="text"
           placeholder="请输入联系人姓名"
+          v-input-check="[form.contact, 'required']"
           v-model="form.contact"
         />
       </div>
@@ -56,6 +62,7 @@
         <input
           type="text"
           placeholder="请输入联系人联系方式"
+          v-input-check="[form.contactPhone, 'required']"
           v-model="form.contactPhone"
         />
       </div>
@@ -80,11 +87,31 @@
         <textarea
           placeholder="请输入申请事由"
           v-model="form.subject"
+          v-input-check="[form.subject, 'required']"
         ></textarea>
       </div>
       <div>
         <label>添加附件：</label>
-        <input type="file" placeholder="请选择添加的文件" />
+        <input
+          type="file"
+          placeholder="请选择添加的文件"
+          ref="clearFile"
+          id="fileid"
+          @change="getFile($event)"
+        />
+        <label for="fileid" class="file-btn add" v-if="!form.filename"
+          >请选择添加的文件</label
+        >
+        <label
+          @click="deleteFile"
+          class="file-btn delete"
+          v-if="form.filename"
+          >{{ form.filename }}</label
+        >
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <span style="color: gray">附件格式（zip压缩文件、Word文档）</span>
       </div>
       <div>
         <label>备注：</label>
@@ -92,13 +119,13 @@
       </div>
       <div class="btn-list row">
         <div class="col-size-4">
-          <button>保存</button>
+          <button @click.prevent="commit('form', 'save')">保存</button>
         </div>
         <div class="col-size-4">
-          <button>重置</button>
+          <button @click.prevent="reset">重置</button>
         </div>
         <div class="col-size-4">
-          <button @click="doBespeak()">确认预约</button>
+          <button @click.prevent="commit('form')">确认预约</button>
         </div>
       </div>
     </form>
@@ -108,7 +135,21 @@
 export default {
   data() {
     return {
-      form: {},
+      form: {
+        departmentId: "",
+        date: "",
+        name: "",
+        phone: "",
+        contact: "",
+        contactPhone: "",
+        attendLeaders: "",
+        attendUsers: "",
+        subject: "",
+        remark: "",
+        filename: "",
+      },
+      fullTime: "",
+      file: "",
     };
   },
   created() {
@@ -117,34 +158,139 @@ export default {
   methods: {
     //获取路由传参
     startupParams() {
-      this.form = this.$route.params;
-      console.log(this.form)
+      // this.form = this.$route.params;
+      console.log(this.$route.params);
+      this.form.departmentId = this.$route.params.departments[0].id;
+       this.form.resourceId=this.$route.params.meetingRoomName;
+      this.form.date = this.$route.params.date;
+      this.form.name = this.$route.params.name;
+      this.form.phone = this.$route.params.phone;
+      this.form.contact = this.$route.params.contact;
+      this.form.contactPhone = this.$route.params.contactPhone;
+      this.form.attendLeaders = this.$route.params.attendLeaders;
+      this.form.attendUsers = this.$route.params.attendUsers;
+      this.form.subject = this.$route.params.subject;
+      this.form.remark = this.$route.params.remark;
+      this.form.filename = this.$route.params.filename;
+     
     },
     //日期切换
-    changeDate(){
-      console.log(this.form.date)
+    changeDate() {
+      console.log(this.form.date);
     },
-    doBespeak() {
+    //文件上传
+    getFile(event) {
+      this.file = event.target.files[0];
+      this.form.filename = this.file.name;
+    },
+    //删除文件
+    deleteFile() {
+      this.form.filename = "";
+      this.file = "";
+      this.$refs.clearFile.value = "";
+    },
+    reset() {
+      this.startupParams();
+      this.filename = "";
+      this.file = "";
+    },
+    commit(form, save) {
       let ERROR = this.$error("bespeakform");
+      let _this = this;
       // 如果表单不合法
       if (!ERROR.isValiadte()) {
         let first = ERROR.first();
-        this.$store.state.openDialog('alert',{
-          errorMsg:first.$error
+        this.$store.state.openDialog("alert", {
+          errorMsg: first.$error,
         });
         first.$el.focus();
         return;
       }
 
+      let dateArray1 = _this.form.date.split(" ");
+      let dateArray2 = dateArray1[1].split("-");
 
+      if (_this.file) {
+        //存在文件，先执行文件上传，再执行提交
+        let ext = _this.file.name
+          .substr(_this.file.name.lastIndexOf("."))
+          .toLowerCase();
+        if (ext != ".docx" && ext != ".doc" && ext != ".zip") {
+          //文件格式需为word或者zip
+          alert("请上传word文档或者zip压缩文件");
+          return;
+        }
+        let param = new FormData(); //创建form对象
+        param.append("file", _this.file); //通过append向form对象添加数据
+        let config = {
+          headers: { "Content-Type": "multipart/form-data" },
+        }; //添加请求头
 
-
-      // todo
-      // 下面是业务代码
+        _this.$axios.post("_fileup", param, config).then((res) => {
+          if (res.data.result) {
+            let params = {
+              domainId: 2,
+              projectId: 12,
+              departmentId: _this.form.departmentId,
+              beginTime: dateArray1[0] + " " + dateArray2[0],
+              endTime: dateArray1[0] + " " + dateArray2[1],
+              name: _this.form.name,
+              phone: _this.form.phone,
+              contact: _this.form.contact,
+              contactPhone: _this.form.contactPhone,
+              attendLeaders: _this.form.attendLeaders,
+              attendUsers: _this.form.attendUsers,
+              resourceId: _this.form.resourceId,
+              id: _this.form.recordId,
+              subject: _this.form.subject,
+              remark: _this.form.remark,
+              status: save ? "-1" : "0",
+              fileKey: res.data.result.data[0].fileKey,
+              fileName: res.data.result.data[0].fileName,
+            };
+            _this.$axios
+              .post("_apigateway/roombooking/api/v1/create.rst", params)
+              .then((res) => {
+                if (res.data && res.data.resultCode == 0) {
+                  _this.$store.state.commitFlag = true;
+                  _this.$router.push("home");
+                }
+              });
+          }
+        });
+      } else {
+        let params = {
+          domainId: 2,
+          projectId: 12,
+          departmentId: _this.form.departmentId,//
+          beginTime: dateArray1[0] + " " + dateArray2[0],
+          endTime: dateArray1[0] + " " + dateArray2[1],
+          name: _this.form.name,
+          phone: _this.form.phone,
+          contact: _this.form.contact,
+          contactPhone: _this.form.contactPhone,
+          attendLeaders: _this.form.attendLeaders,
+          attendUsers: _this.form.attendUsers,
+          resourceId: _this.form.resourceId,//
+          id: _this.form.recordId,
+          subject: _this.form.subject,
+          status: save ? "-1" : "0",
+          remark: _this.form.remark,
+          fileKey: "",
+          fileName: "",
+        };
+        _this.$axios
+          .post("_apigateway/roombooking/api/v1/create.rst", params)
+          .then((res) => {
+            if (res.data.resultCode == 0) {
+              _this.$store.state.commitFlag = true;
+              _this.$router.push("home");
+            }
+          });
+      }
     },
   },
 };
-
 </script>
 <style lang="scss" scoped>
 .bespeak-view {
@@ -172,6 +318,27 @@ export default {
         display: inline-block;
         width: 1.4rem;
         padding-left: 0.25rem;
+        &.file-btn {
+          color: gray;
+          position: absolute;
+          left: 145px;
+          width: 4.8rem;
+          background-color: white;
+          line-height: 0.4rem;
+          border: 1px dashed gray;
+          border-radius: 0.05rem;
+          padding-left: 0.05rem;
+          font-size: 14px;
+          background-position: 453px center;
+          background-size: auto 50%;
+          background-repeat: no-repeat;
+          &.add {
+            background-image: url("../assets/images/icon8.png");
+          }
+          &.delete {
+            background-image: url("../assets/images/icon18.png");
+          }
+        }
       }
       & > input {
         width: 4.8rem;
@@ -187,7 +354,7 @@ export default {
           border: 1px solid red;
         }
       }
-      & > select{
+      & > select {
         width: 4.8rem;
         height: 3em;
         border-radius: 0.05rem;
