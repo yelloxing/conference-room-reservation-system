@@ -249,7 +249,7 @@ Vue.directive('calendar2', {
             for (let i = 0; i < divs.length; i++) {
                 if (xhtml.hasClass(divs[i], 'selectbtn')) {
                     xhtml.bind(divs[i], 'click', () => {
-                        el.value = year + "-" + month + "-" + day + " " + topHour + ":00-" + bottomHour + ":00";
+                        el.value = year + "-" + (month > 9 ? "" : "0") + month + "-" + (day > 9 ? "" : "0") + day + " " + (topHour > 9 ? "" : "0") + topHour + ":00-" + (bottomHour > 9 ? "" : "0") + bottomHour + ":00";
                         xhtml.trigger(el, 'input');
                         close();
                     })
