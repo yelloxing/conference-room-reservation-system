@@ -4,7 +4,12 @@
     <li class="ui-main">
       <header>
         <h1>会议室预约管理系统</h1>
-        <div class="right"></div>
+        <div class="right" @click="topBtnFlag=!topBtnFlag">
+          <ul v-show='topBtnFlag'>
+            <li @click="login">登录系统</li>
+            <li>管理规定</li>
+          </ul>
+        </div>
       </header>
       <div class="img"></div>
       <div class="content">
@@ -57,6 +62,7 @@ export default {
       // 全部弹框
       all_dialog: dialogs,
       loginFlag: false,
+      topBtnFlag:false
     };
   },
   created() {
@@ -73,7 +79,7 @@ export default {
       this.$router.push("bespeak");
     },
     login() {
-      window.location.href = "http://218.94.154.34:54392/"
+      window.location.href = "http://218.94.154.34:54392/";
     },
     logout() {
       let logininfo = sessionStorage.getItem("logininfo");
@@ -143,16 +149,48 @@ export default {
         background-size: 40% auto;
         background-repeat: no-repeat;
         background-position: right center;
+        & > ul {
+          background-color: #534f4f;
+          position: absolute;
+          padding: 0.1rem 0.2rem;
+          border-radius: 0.15rem;
+          top: 80px;
+          right: -20px;
+          &::before {
+            content: " ";
+            display: inline-block;
+            background-color: #534f4f;
+            position: absolute;
+            top: -10px;
+            width: 20px;
+            height: 20px;
+            transform: rotate(45deg);
+            right: 20px;
+          }
+          & > li {
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            padding-left: 0.6rem;
+            color: #ffffff;
+            font-size: 0.18rem;
+            &:first-child {
+              background-image: url("./assets/images/icon26.png");
+            }
+            &:last-child {
+              background-image: url("./assets/images/icon25.png");
+            }
+          }
+        }
       }
     }
     & > .img {
-       background-image: url("./assets/images/icon12.png");
-       height: 300px;
-       background-position: center center;
-       background-size: auto 100%;
+      background-image: url("./assets/images/icon12.png");
+      height: 300px;
+      background-position: center center;
+      background-size: auto 100%;
     }
     & > .content {
-      margin:-.2rem .5rem 0 .5rem;
+      margin: -0.2rem 0.5rem 0 0.5rem;
     }
     & > footer {
       text-align: center;
