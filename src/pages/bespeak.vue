@@ -206,12 +206,14 @@ export default {
           flag:"modify",
           recordId:item.id
         }, (data) => {
-          if(data.auditStatus == '1'){
-            this.$store.state.dialogVisible = true
-            this.$store.state.message = "预约信息已提交，待审核"
-          }else if(data.auditStatus == '0'){
-            this.$store.state.dialogVisible = true
-            this.$store.state.message = "预约成功"
+          if(data){
+            if(data.auditStatus == '1'){
+              this.$store.state.dialogVisible = true
+              this.$store.state.message = "预约信息已提交，待审核"
+            }else if(data.auditStatus == '0'){
+              this.$store.state.dialogVisible = true
+              this.$store.state.message = "预约成功"
+            }
           }
           // 弹框关闭以后的回调
           this.getInfo()
