@@ -8,20 +8,27 @@
           <a
             href="javascript:void(0)"
             v-if="$route.name == 'bespeak'"
-            @click="goHome()">首页</a
+            @click="goHome()"
+            >首页</a
           >
-          <a
-            href="javascript:void(0)"
-            v-if="loginFlag">用户:{{userName}}</a
-          >
+          <a href="javascript:void(0)" v-if="loginFlag">用户:{{ userName }}</a>
           <a
             href="javascript:void(0)"
             class="personal-center"
             @click="goBespeak()"
-            v-if="loginFlag">我的预约</a
+            v-if="loginFlag"
+            >我的预约</a
           >
-          <a href="javascript:void(0)" class="exit" v-if="loginFlag" @click="logout">登出</a>
-          <a href="javascript:void(0)" class="login" v-else @click="login">登录</a>
+          <a
+            href="javascript:void(0)"
+            class="exit"
+            v-if="loginFlag"
+            @click="logout"
+            >登出</a
+          >
+          <a href="javascript:void(0)" class="login" v-else @click="login"
+            >登录</a
+          >
         </div>
       </header>
       <router-view></router-view>
@@ -61,15 +68,16 @@
     <el-dialog
       title="提示"
       :visible.sync="$store.state.dialogVisible"
-      width="30%">
-      <span>{{$store.state.message}}</span>
+      width="30%"
+    >
+      <span>{{ $store.state.message }}</span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleConfirm">确定</el-button>
       </span>
     </el-dialog>
 
-    <div class="loading" v-if="$store.state.loading"> 
-      <img src="./assets/images/loading.gif"/>
+    <div class="loading" v-if="$store.state.loading">
+      <img src="./assets/images/loading.gif" />
     </div>
   </ul>
 </template>
@@ -81,17 +89,17 @@ export default {
     return {
       // 全部弹框
       all_dialog: dialogs,
-      loginFlag:false,
-      userName:'',
-      userinfo: sessionStorage.getItem('logininfo')
+      loginFlag: false,
+      userName: "",
+      userinfo: sessionStorage.getItem("logininfo"),
     };
   },
-  created(){
-    let userinfo = sessionStorage.getItem('logininfo')
-    if(userinfo){
-      this.loginFlag = true
-      let data = JSON.parse(userinfo).data
-      this.userName = data.userName
+  created() {
+    let userinfo = sessionStorage.getItem("logininfo");
+    if (userinfo) {
+      this.loginFlag = true;
+      let data = JSON.parse(userinfo).data;
+      this.userName = data.userName;
     }
   },
   methods: {
@@ -102,24 +110,28 @@ export default {
     goBespeak() {
       this.$router.push("bespeak");
     },
-    login(){
-      window.open("http://218.94.154.34:54392/")
-    },
-    logout(){
-      let logininfo = sessionStorage.getItem('logininfo')
-      let userinfo = JSON.parse(logininfo).data
-      window.location.href = userinfo.logoutUrl
-    },
-    handleConfirm(){
-      this.$store.state.dialogVisible = false
-      if(this.$store.state.loginFlag){
-        this.$store.state.loginFlag = false
-        window.open("http://218.94.154.34:54392/")
+    login() {
+      // window.open("http://218.94.154.34:54392/")
+      let userinfo = sessionStorage.getItem("logininfo");
+      if (userinfo) {
+        window.opem(userinfo.data.logoutUrl);
       }
     },
-    goHome(){
-      this.$router.push('/home')
-    }
+    logout() {
+      let logininfo = sessionStorage.getItem("logininfo");
+      let userinfo = JSON.parse(logininfo).data;
+      window.location.href = userinfo.logoutUrl;
+    },
+    handleConfirm() {
+      this.$store.state.dialogVisible = false;
+      if (this.$store.state.loginFlag) {
+        this.$store.state.loginFlag = false;
+        window.open("http://218.94.154.34:54392/");
+      }
+    },
+    goHome() {
+      this.$router.push("/home");
+    },
   },
 };
 </script>
@@ -214,7 +226,7 @@ export default {
     }
   }
 
-  .loading{
+  .loading {
     position: fixed;
     width: 100%;
     height: 100vh;
@@ -223,7 +235,7 @@ export default {
     opacity: 0.5;
     z-index: 999;
 
-    img{
+    img {
       position: absolute;
       top: 45%;
       left: 48%;
