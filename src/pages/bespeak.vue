@@ -161,7 +161,7 @@ export default {
       // this.form = this.$route.params;
       console.log(this.$route.params);
       this.form.departmentId = this.$route.params.departments[0].id;
-         this.form.resourceId=this.$route.params.meetingRoomName;
+      this.form.resourceId = this.$route.params.meetingRoomId;
       this.form.date = this.$route.params.date;
       this.form.name = this.$route.params.name;
       this.form.phone = this.$route.params.phone;
@@ -172,7 +172,6 @@ export default {
       this.form.subject = this.$route.params.subject;
       this.form.remark = this.$route.params.remark;
       this.form.filename = this.$route.params.filename;
-     
     },
     //日期切换
     changeDate() {
@@ -240,7 +239,7 @@ export default {
               contactPhone: _this.form.contactPhone,
               attendLeaders: _this.form.attendLeaders,
               attendUsers: _this.form.attendUsers,
-              resourceId: _this.form.name,
+              resourceId: _this.form.meetingRoomId,
               id: _this.form.recordId,
               subject: _this.form.subject,
               remark: _this.form.remark,
@@ -262,7 +261,7 @@ export default {
         let params = {
           domainId: 2,
           projectId: 12,
-          departmentId: _this.form.departmentId,//
+          departmentId: _this.form.departmentId, //
           beginTime: dateArray1[0] + " " + dateArray2[0],
           endTime: dateArray1[0] + " " + dateArray2[1],
           name: _this.form.name,
@@ -271,7 +270,7 @@ export default {
           contactPhone: _this.form.contactPhone,
           attendLeaders: _this.form.attendLeaders,
           attendUsers: _this.form.attendUsers,
-          resourceId: _this.form.name,//
+          resourceId: _this.form.meetingRoomId, //
           id: _this.form.recordId,
           subject: _this.form.subject,
           status: save ? "-1" : "0",
