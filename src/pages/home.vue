@@ -51,9 +51,9 @@
       </div>
       <div class="select-calendar">
         <div class="top">
-          <div class="left">
+          <div class="left select-frame">
             <span class="title">预约情况</span>
-            <input type="text" v-model="appointDate" />
+            <input type="text" v-model="appointDate" v-calendar/>
           </div>
           <span class="to" v-togger-view>点击查看预约的情况</span>
         </div>
@@ -434,6 +434,7 @@ export default {
               background-size: 60% auto;
               background-position: center center;
               background-repeat: no-repeat;
+              color: transparent;
             }
           }
         }
