@@ -219,6 +219,7 @@ export default {
       this.meetingRoomInfoList = JSON.parse(
         JSON.stringify(this.meetingRoomInfoList)
       );
+      
       this.queryAppointInfo()
     },
     //后一周

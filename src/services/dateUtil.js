@@ -45,7 +45,7 @@ export let dateToArray = function (date) {
 
 //获取指定日期一周后的日期
 export let getFutureWeekDay = function(d,filter=true){
-    let date = new Date(d) 
+    let date = new Date(d.replace(/-/g,'/')) 
     let dateArr = []
     let desc,today = new Date()
     for(let i = 0; i < 7;i++){
@@ -120,10 +120,10 @@ export let numToTime = function(time){
 //计算日期差值
 export let dateBetween= function(sDate1,sDate2,time){
     if( typeof sDate1 == 'string' ){
-        sDate1 = new Date(sDate1)
+        sDate1 = new Date(sDate1.replace(/-/g,'/'))
     }
     if(typeof sDate2 == 'string' ){
-        sDate2 = new Date(sDate2)
+        sDate2 = new Date(sDate2.replace(/-/g,'/'))
     }
     let m1,m2,iDays
     m1 = sDate1.getTime()
