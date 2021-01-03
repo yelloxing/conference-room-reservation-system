@@ -118,7 +118,9 @@ export default {
       // 如果表单不合法
       if (!ERROR.isValiadte()) {
         let first = ERROR.first();
-        alert(first.$error);
+        this.$store.state.openDialog('alert',{
+          errorMsg:first.$error
+        });
         first.$el.focus();
         return;
       }

@@ -73,8 +73,7 @@ export default {
       this.$router.push("bespeak");
     },
     login() {
-      // window.location.href = "/"
-      window.open("/");
+      window.location.href = "http://218.94.154.34:54392/"
     },
     logout() {
       let logininfo = sessionStorage.getItem("logininfo");

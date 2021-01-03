@@ -241,6 +241,7 @@ export default {
         this.preselectList.push(value)
         this.$set(value,'preselect',true)
       }
+      console.log(this.preselectList)
       this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
     },
 
@@ -261,6 +262,34 @@ export default {
       // this.$router.push("detail");
     },
     remind(item) {
+
+      if(!sessionStorage.getItem('logininfo')){
+        this.$store.state.loginFlag = true
+        this.$store.state.openDialog('alert',{
+          errorMsg:'请先登录'
+        })
+        return
+      }
+
+      if(this.preselectList.length == 0){
+        this.$store.state.openDialog('alert',{
+          errorMsg:'请先选择预约时间'
+        })
+        return
+      }
+
+
+      let arr = this.preselectList.sort(function(a,b){
+        return new Date(a.beginTime).getTime() - new Date(b.beginTime).getTime()
+      })
+
+      if(dateBetween(arr[0].beginTime,arr[arr.length -1].beginTime,true) != arr.length - 1){
+        this.$store.state.openDialog('alert',{
+          errorMsg:'请选择连续的时间'
+        })
+        return
+      }
+
       let param = {
           departments:this.departmentList,   //部门
           date:'',
@@ -401,7 +430,6 @@ export default {
               border: none;
               outline: none;
               background-color: transparent;
-              color:transparent;
               background-image: url("../assets/images/icon15.png");
               background-size: 60% auto;
               background-position: center center;
