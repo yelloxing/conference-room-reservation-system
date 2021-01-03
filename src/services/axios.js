@@ -27,8 +27,9 @@ axios.interceptors.request.use(function (config) {
 axios.interceptors.response.use(function (response) {
   store.state.loading = false
     if((response.data.resultCode == 1 || response.data.code == 1) && response.config.url.indexOf('info.rst') == '-1'){
-      store.state.dialogVisible = true
-      store.state.message = response.data.errorMsg
+      store.state.openDialog('alert',{
+        errorMsg:response.data.errorMsg
+      })
       return
     }
     // 对响应数据做点什么

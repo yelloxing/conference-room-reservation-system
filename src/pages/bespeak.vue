@@ -22,7 +22,7 @@
         <!-- <input type="text" placeholder="请输入申请单位" /> -->
         <select v-model="form.departmentId">
           <option
-            v-for="(row, index) in form.departmentList"
+            v-for="(row, index) in form.departments"
             :key="index"
             :value="row.id"
           >
@@ -132,10 +132,12 @@
   </div>
 </template>
 <script>
+import { dateBetween } from '../services/dateUtil';
 export default {
   data() {
     return {
       form: {
+        meetingRoomName:"",
         departmentId: "",
         date: "",
         name: "",
@@ -160,9 +162,14 @@ export default {
     startupParams() {
       // this.form = this.$route.params;
       console.log(this.$route.params);
-      this.form.departmentId = this.$route.params.departments[0].id;
+      this.form.departments = this.$route.params.departments;
+      this.form.meetingRoomName = this.$route.params.meetingRoomName;
+      this.form.departmentId = this.$route.params.departments.length > 0 ? this.$route.params.departments[0].id : '';
       this.form.meetingRoomId = this.$route.params.meetingRoomId;
       this.form.date = this.$route.params.date;
+      this.form.beginTime = this.form.date.split(' ')[0] + ' ' + this.form.date.split(' ')[1].split('-')[0]
+      this.form.endTime = this.form.date.split(' ')[0] + ' ' + this.form.date.split(' ')[1].split('-')[1]
+
       this.form.name = this.$route.params.name;
       this.form.phone = this.$route.params.phone;
       this.form.contact = this.$route.params.contact;
@@ -172,9 +179,68 @@ export default {
       this.form.subject = this.$route.params.subject;
       this.form.remark = this.$route.params.remark;
       this.form.filename = this.$route.params.filename;
+
+
+      this.form.maxPreTime = this.$route.params.maxPreTime
+      this.form.maxUseTime = this.$route.params.maxUseTime
+      this.form.maxStopTime = this.$route.params.maxStopTime
     },
     //日期切换
-    changeDate() {
+    changeDate() {  
+
+      let date = this.form.date.split(' ')[0]
+      let beginTime = date + ' ' +  this.form.date.split(' ')[1].split('-')[0]
+      let endTime = date + ' ' +  this.form.date.split(' ')[1].split('-')[1]
+
+      let daysBetween =  dateBetween(new Date(),beginTime)   //当前预约的点与现在的差值天数
+      let timesBetween =  dateBetween(new Date(),beginTime,true) //当前预约的点与现在的差值小时数
+      let betweens = dateBetween(beginTime,endTime,true) //预约时长
+      if(timesBetween < 0){
+        this.$store.state.openDialog('alert',{
+          errorMsg:'请选择当前时间之后的时间进行预约'
+        })
+         this.form.date = this.form.beginTime + '-' + this.form.endTime.split(' ')[1].split('-')[1]
+      }
+
+      if(betweens <= 0){
+        this.$store.state.openDialog('alert',{
+          errorMsg:'结束时间需大于开始时间'
+        })
+         this.form.date = this.form.beginTime + '-' + this.form.endTime.split(' ')[1]
+         return
+      }
+
+
+      if(this.form.maxPreTime && this.form.maxPreTime != 0 && daysBetween > this.form.maxPreTime){  //选定的天数差 大于 最大预约天数
+          this.$store.state.openDialog('alert',{
+          errorMsg:'预约时间大于该资源最大预约天数:'+this.form.maxPreTime + '天'
+        })
+        this.form.date = this.form.beginTime + '-' + this.form.endTime.split(' ')[1]
+        return
+      }
+
+      if(this.form.maxStopTime && this.form.maxStopTime != 0 && timesBetween < this.form.maxStopTime){ //选定的小时差 小于 最大停止预约时间 
+        this.$store.state.openDialog('alert',{
+          errorMsg:'当前时间已过最大停止预约时间:'+this.form.maxStopTime + '小时'
+        })
+       this.form.date = this.form.beginTime + '-' + this.form.endTime.split(' ')[1]
+        return
+      }
+
+      if(this.form.maxUseTime && this.form.maxUseTime != 0 && betweens > this.form.maxUseTime){ 
+        this.$store.state.openDialog('alert',{
+          errorMsg:'预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'
+        })
+        this.form.date = this.form.beginTime + '-' + this.form.endTime.split(' ')[1]
+        return
+      }
+      
+
+      this.form.beginTime = this.form.date.split(' ')[0] + ' ' + this.form.date.split(' ')[1].split('-')[0]
+
+      this.form.endTime = this.form.date.split(' ')[0] + ' ' + this.form.date.split(' ')[1].split('-')[1]
+
+
       console.log(this.form.date);
     },
     //文件上传
@@ -216,7 +282,9 @@ export default {
           .toLowerCase();
         if (ext != ".docx" && ext != ".doc" && ext != ".zip") {
           //文件格式需为word或者zip
-          alert("请上传word文档或者zip压缩文件");
+          this.$store.state.openDialog("alert",{
+            errorMsg:"请上传word文档或者zip压缩文件"
+          });
           return;
         }
         let param = new FormData(); //创建form对象
@@ -247,12 +315,22 @@ export default {
               fileKey: res.data.result.data[0].fileKey,
               fileName: res.data.result.data[0].fileName,
             };
-            _this.$axios
-              .post("_apigateway/roombooking/api/v1/create.rst", params)
-              .then((res) => {
+            _this.$axios.post("_apigateway/roombooking/api/v1/create.rst", params).then(res => {
                 if (res.data && res.data.resultCode == 0) {
                   _this.$store.state.commitFlag = true;
-                  _this.$router.push("home");
+                  if(res.data.auditStatus == 1){
+                    _this.$store.state.openDialog('alert',{
+                      errorMsg:'预约信息已提交，待审核'
+                    },()=>{
+                      _this.$router.push("home");
+                    })
+                  }else if(res.data.auditStatus == 0){
+                    _this.$store.state.openDialog('alert',{
+                      errorMsg:'预约成功'
+                    },()=>{
+                      _this.$router.push("home");
+                    })
+                  }
                 }
               });
           }
@@ -280,10 +358,25 @@ export default {
         };
         _this.$axios
           .post("_apigateway/roombooking/api/v1/create.rst", params)
-          .then((res) => {
+          .then(res => {
+            console.log(res)
             if (res.data.resultCode == 0) {
               _this.$store.state.commitFlag = true;
-              _this.$router.push("home");
+              if(res.data.auditStatus == 1){
+                _this.$store.state.openDialog('alert',{
+                  errorMsg:'预约信息已提交，待审核'
+                },()=>{
+                  _this.$router.push("home");
+                })
+              }else if(res.data.auditStatus == 0){
+                _this.$store.state.openDialog('alert',{
+                  errorMsg:'预约成功'
+                },()=>{
+                  _this.$router.push("home");
+                })
+              }else{
+                _this.$router.push("home");
+              }
             }
           });
       }

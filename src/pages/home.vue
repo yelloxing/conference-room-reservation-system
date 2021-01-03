@@ -170,7 +170,8 @@ export default {
       let that = this;
       this.meetingRoomInfoList.forEach((item, index1) => {
         item.activeDateId = 0
-        item.dates = getFutureWeekDay(dateToStr(item.appointDate || this.today));
+        item.appointDate = item.appointDate || this.today
+        item.dates = getFutureWeekDay(dateToStr(item.appointDate));
         item.dates.forEach((date) => {
           date.times = that.timeList.map((time) => {
             let param = {
@@ -196,7 +197,6 @@ export default {
           });
         });
       });
-      console.log(this.meetingRoomInfoList)
     },
 
     //切换日期id
@@ -214,14 +214,20 @@ export default {
 
     //前一周
     preWeek(item){
-      let preDate = getExpectDate(item.appointDate,-7)
+      let preDate = getExpectDate(dateToStr(item.appointDate),-7)
       item.appointDate = preDate
+      this.meetingRoomInfoList = JSON.parse(
+        JSON.stringify(this.meetingRoomInfoList)
+      );
       this.queryAppointInfo()
     },
     //后一周
     nextWeek(item){
-      let preDate = getExpectDate(item.appointDate,7)
+      let preDate = getExpectDate(dateToStr(item.appointDate),7)
       item.appointDate = preDate
+      this.meetingRoomInfoList = JSON.parse(
+        JSON.stringify(this.meetingRoomInfoList)
+      );
       this.queryAppointInfo()
 
     },
@@ -235,21 +241,21 @@ export default {
       let timesBetween =  dateBetween(this.today,value.beginTime,true) //当前预约的点与现在的差值小时数
       
       if(timesBetween < 0){
-        this.$store.openDialog('alert',{
+        this.$store.state.openDialog('alert',{
           errorMsg:'请选择当前时间之后的时间进行预约'
         })
         return
       }
       
       if(item.maxPreTime != undefined && item.maxPreTime != 0 &&daysBetween > item.maxPreTime){  //选定的天数差 大于 最大预约天数
-          this.$store.openDialog('alert',{
+          this.$store.state.openDialog('alert',{
           errorMsg:'预约时间大于该资源最大预约天数:'+item.maxPreTime + '天'
         })
         return
       }
 
       if(item.maxStopTime && item.maxStopTime != 0 && timesBetween < item.maxStopTime){ //选定的小时差 小于 最大停止预约时间 
-        this.$store.openDialog('alert',{
+        this.$store.state.openDialog('alert',{
           errorMsg:'当前时间已过最大停止预约时间:'+item.maxStopTime + '小时'
         })
         return
@@ -318,7 +324,6 @@ export default {
       let between = dateBetween(beginTime,endTime,true)
 
       if(item.maxUseTime && item.maxUseTime != 0 && between > item.maxUseTime){ 
-        this.$store.state.dialogVisible = true; //错误弹框
         this.$store.state.openDialog('alert',{
           errorMsg:'预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'
         })
@@ -330,7 +335,9 @@ export default {
           date:arr[0].beginTime + '-' + arr[arr.length - 1].endTime.split(' ')[1],
           meetingRoomName:item.name,
           meetingRoomId:item.id,
-          departmentList:this.departmentList
+          maxStopTime:item.maxStopTime,
+          maxPreTime:item.maxPreTime,
+          maxUseTime:item.maxUseTime
       }
 
       this.$router.push({ name:"bespeak", params:param });
@@ -578,7 +585,7 @@ export default {
       & > .button-list {
         white-space: nowrap;
         font-size: 0;
-        border-top: 1px solid #555555;
+        border-top: 1px solid #e0e0e0;
         & > button {
           width: 50%;
           font-size: 0.14rem;

@@ -6,7 +6,9 @@
         <h1>会议室预约管理系统</h1>
         <div class="right" @click="topBtnFlag=!topBtnFlag">
           <ul v-show='topBtnFlag'>
-            <li @click="login">登录系统</li>
+            <li @click="login" v-if="!loginFlag">登录系统</li>
+            <li @click="logout" v-if="loginFlag">登出系统</li>
+            <li v-if="loginFlag">用户：{{username}}</li>
             <li>管理规定</li>
           </ul>
         </div>
@@ -62,11 +64,13 @@ export default {
       // 全部弹框
       all_dialog: dialogs,
       loginFlag: false,
-      topBtnFlag:false
+      topBtnFlag:false,
+      username:''
     };
   },
   created() {
     if (sessionStorage.getItem("logininfo")) {
+      this.username = JSON.parse(sessionStorage.getItem("logininfo")).data.userName
       this.loginFlag = true;
     }
   },
@@ -79,7 +83,8 @@ export default {
       this.$router.push("bespeak");
     },
     login() {
-      window.location.href = "http://218.94.154.34:54392/";
+      let loginUrl = sessionStorage.getItem('loginUrl')
+      window.open(loginUrl)
     },
     logout() {
       let logininfo = sessionStorage.getItem("logininfo");
