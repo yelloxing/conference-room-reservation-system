@@ -42,6 +42,8 @@ router.beforeEach((to, from, next) => {
     axios.post('/_apigateway/sso/api/v1/info.rst',{}).then(res=>{
       if(res.data.resultCode == 0 || res.data.code == 0){
         sessionStorage.setItem('logininfo',JSON.stringify(res.data.result))
+      }else{
+        sessionStorage.setItem('logoutUrl',res.data.errorMsg);
       }
       next()
     }).catch(()=>{

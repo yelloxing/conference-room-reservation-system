@@ -112,10 +112,8 @@ export default {
     },
     login() {
       // window.open("http://218.94.154.34:54392/")
-      let userinfo = sessionStorage.getItem("logininfo");
-      if (userinfo) {
-        window.opem(userinfo.data.logoutUrl);
-      }
+      let logoutUrl = sessionStorage.getItem("logoutUrl");
+      window.open(logoutUrl);
     },
     logout() {
       let logininfo = sessionStorage.getItem("logininfo");
