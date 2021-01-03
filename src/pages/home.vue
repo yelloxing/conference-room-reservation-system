@@ -75,7 +75,7 @@
 
               <!-- 里面的时间 -->
               <div class="time-btns" v-show="item.activeDateId == i">
-                <span v-for="(value,ind) in date.times" :key="ind" @click="preselectClick(value)">
+                <span v-for="(value,ind) in date.times" :key="ind" @click="preselectClick(value,item)">
                   <div>{{value.time}}</div>
 
                   <!-- 小格子选中的话： <div class='active'></div> -->
@@ -230,6 +230,31 @@ export default {
         return
       }
 
+
+      let daysBetween =  dateBetween(this.today,value.beginTime)   //当前预约的点与现在的差值天数
+      let timesBetween =  dateBetween(this.today,value.beginTime,true) //当前预约的点与现在的差值小时数
+      
+      if(timesBetween < 0){
+        this.$store.openDialog('alert',{
+          errorMsg:'请选择当前时间之后的时间进行预约'
+        })
+        return
+      }
+      
+      if(item.maxPreTime != undefined && item.maxPreTime != 0 &&daysBetween > item.maxPreTime){  //选定的天数差 大于 最大预约天数
+          this.$store.openDialog('alert',{
+          errorMsg:'预约时间大于该资源最大预约天数:'+item.maxPreTime + '天'
+        })
+        return
+      }
+
+      if(item.maxStopTime && item.maxStopTime != 0 && timesBetween < item.maxStopTime){ //选定的小时差 小于 最大停止预约时间 
+        this.$store.openDialog('alert',{
+          errorMsg:'当前时间已过最大停止预约时间:'+item.maxStopTime + '小时'
+        })
+        return
+      }
+
       let i
       let select = this.preselectList.find((row,index) => {
         if(row.fullTime == value.fullTime){
@@ -246,7 +271,6 @@ export default {
         this.preselectList.push(value)
         this.$set(value,'preselect',true)
       }
-      console.log(this.preselectList)
       this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
     },
     
@@ -261,7 +285,6 @@ export default {
       window.location.href = item.infoUrl
     },
     remind(item) {
-
       if(!sessionStorage.getItem('logininfo')){
         this.$store.state.loginFlag = true
         this.$store.state.openDialog('alert',{
@@ -285,6 +308,19 @@ export default {
       if(dateBetween(arr[0].beginTime,arr[arr.length -1].beginTime,true) != arr.length - 1){
         this.$store.state.openDialog('alert',{
           errorMsg:'请选择连续的时间'
+        })
+        return
+      }
+
+       //计算连续的时间段是否超过最大预约时长
+      let beginTime = arr[0].beginTime  
+      let endTime = arr[arr.length-1].endTime
+      let between = dateBetween(beginTime,endTime,true)
+
+      if(item.maxUseTime && item.maxUseTime != 0 && between > item.maxUseTime){ 
+        this.$store.state.dialogVisible = true; //错误弹框
+        this.$store.state.openDialog('alert',{
+          errorMsg:'预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'
         })
         return
       }
