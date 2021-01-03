@@ -316,6 +316,7 @@ export default {
             border: 1px solid #b2b2bd;
             width: 2.8rem;
             height: 2em;
+            background: #fff;
           }
           & > button {
             border-radius: 0.05rem;
