@@ -240,7 +240,7 @@ export default {
               contactPhone: _this.form.contactPhone,
               attendLeaders: _this.form.attendLeaders,
               attendUsers: _this.form.attendUsers,
-              resourceId: _this.form.resourceId,
+              resourceId: _this.form.name,
               id: _this.form.recordId,
               subject: _this.form.subject,
               remark: _this.form.remark,
