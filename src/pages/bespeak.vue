@@ -119,13 +119,14 @@
       </div>
       <div class="btn-list row">
         <div class="col-size-4">
-          <button @click.prevent="commit('form', 'save')">保存</button>
+          <button @click.prevent="commit('form', '-1')">保存</button>
         </div>
         <div class="col-size-4">
           <button @click.prevent="reset">重置</button>
         </div>
         <div class="col-size-4">
-          <button @click.prevent="commit('form')">确认预约</button>
+          <button @click.prevent="commit('form','0')" v-if="form.auditStatus != 0">确认预约</button>
+          <button @click.prevent="commit('form','1')" v-if="form.auditStatus == 0">确认预约</button>
         </div>
       </div>
     </form>
@@ -169,7 +170,7 @@ export default {
       this.form.date = this.$route.params.date;
       this.form.beginTime = this.form.date.split(' ')[0] + ' ' + this.form.date.split(' ')[1].split('-')[0]
       this.form.endTime = this.form.date.split(' ')[0] + ' ' + this.form.date.split(' ')[1].split('-')[1]
-
+      
       this.form.name = this.$route.params.name;
       this.form.phone = this.$route.params.phone;
       this.form.contact = this.$route.params.contact;
@@ -184,6 +185,7 @@ export default {
       this.form.maxPreTime = this.$route.params.maxPreTime
       this.form.maxUseTime = this.$route.params.maxUseTime
       this.form.maxStopTime = this.$route.params.maxStopTime
+      this.form.auditStatus = this.$route.params.auditStatus;
     },
     //日期切换
     changeDate() {  
@@ -259,7 +261,7 @@ export default {
       this.filename = "";
       this.file = "";
     },
-    commit(form, save) {
+    commit(form, status) {
       let ERROR = this.$error("bespeakform");
       let _this = this;
       // 如果表单不合法
@@ -311,22 +313,22 @@ export default {
               id: _this.form.recordId,
               subject: _this.form.subject,
               remark: _this.form.remark,
-              status: save ? "-1" : "0",
+              status: status,
               fileKey: res.data.result.data[0].fileKey,
               fileName: res.data.result.data[0].fileName,
             };
             _this.$axios.post("_apigateway/roombooking/api/v1/create.rst", params).then(res => {
                 if (res.data && res.data.resultCode == 0) {
                   _this.$store.state.commitFlag = true;
-                  if(res.data.auditStatus == 1){
+                  if(_this.form.auditStatus == 0){
                     _this.$store.state.openDialog('alert',{
-                      errorMsg:'预约信息已提交，待审核'
+                      errorMsg:'预约成功'
                     },()=>{
                       _this.$router.push("home");
                     })
-                  }else if(res.data.auditStatus == 0){
+                  }else{
                     _this.$store.state.openDialog('alert',{
-                      errorMsg:'预约成功'
+                      errorMsg:'预约信息已提交，待审核'
                     },()=>{
                       _this.$router.push("home");
                     })
@@ -351,7 +353,7 @@ export default {
           resourceId: _this.form.meetingRoomId, //
           id: _this.form.recordId,
           subject: _this.form.subject,
-          status: save ? "-1" : "0",
+          status: status,
           remark: _this.form.remark,
           fileKey: "",
           fileName: "",
@@ -362,20 +364,18 @@ export default {
             console.log(res)
             if (res.data.resultCode == 0) {
               _this.$store.state.commitFlag = true;
-              if(res.data.auditStatus == 1){
-                _this.$store.state.openDialog('alert',{
-                  errorMsg:'预约信息已提交，待审核'
-                },()=>{
-                  _this.$router.push("home");
-                })
-              }else if(res.data.auditStatus == 0){
+              if(_this.form.auditStatus == 0){
                 _this.$store.state.openDialog('alert',{
                   errorMsg:'预约成功'
                 },()=>{
                   _this.$router.push("home");
                 })
               }else{
-                _this.$router.push("home");
+                _this.$store.state.openDialog('alert',{
+                  errorMsg:'预约信息已提交，待审核'
+                },()=>{
+                  _this.$router.push("home");
+                })
               }
             }
           });

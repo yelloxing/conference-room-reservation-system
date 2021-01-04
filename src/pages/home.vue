@@ -375,6 +375,7 @@ export default {
         maxStopTime: item.maxStopTime,
         maxPreTime: item.maxPreTime,
         maxUseTime: item.maxUseTime,
+        auditStatus:item.auditStatus
       };
 
       this.$router.push({ name: "bespeak", params: param });
