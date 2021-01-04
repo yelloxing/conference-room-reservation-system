@@ -8,7 +8,7 @@
           <ul v-show='topBtnFlag'>
             <li @click="login" v-if="!loginFlag">登录系统</li>
             <li @click="logout" v-if="loginFlag">登出系统</li>
-            <li v-if="loginFlag">用户：{{username}}</li>
+            <li v-if="loginFlag">用户：{{logininfo.data.userName}}</li>
             <li>管理规定</li>
           </ul>
         </div>
@@ -64,19 +64,36 @@ export default {
       // 全部弹框
       all_dialog: dialogs,
       loginFlag: false,
-      topBtnFlag:false,
-      username:''
+      topBtnFlag:false
     };
   },
   created() {
-    if (sessionStorage.getItem("logininfo")) {
-      this.username = JSON.parse(sessionStorage.getItem("logininfo")).data.userName
-      this.loginFlag = true;
+    // if (sessionStorage.getItem("logininfo")) {
+    //   this.username = JSON.parse(sessionStorage.getItem("logininfo")).data.userName
+    //   this.loginFlag = true;
+    // }
+    this.getLoginStatus()
+  },
+  watch:{
+    logininfo(newv){
+      if(newv && newv.data){
+        this.getLoginStatus()
+      }
+    }
+  },
+  computed: {
+    logininfo(){
+      return this.$store.state.logininfo
     }
   },
   methods: {
-    doIt() {
+    getLoginStatus() {
       // todo
+      if(this.logininfo && this.logininfo.data){
+        this.loginFlag = true
+      }else{
+        this.loginFlag = false
+      }
     },
     // 个人中心
     goBespeak() {

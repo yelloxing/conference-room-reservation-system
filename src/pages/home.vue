@@ -322,6 +322,9 @@ export default {
         this.$store.state.loginFlag = true;
         this.$store.state.openDialog("alert", {
           errorMsg: "请先登录",
+        },()=>{
+          let loginUrl = sessionStorage.getItem('loginUrl')
+          window.open(loginUrl)
         });
         return;
       }
