@@ -282,6 +282,7 @@ export default {
           "meetingRoomName":item.name,
           "addressId":item.addressId,
           "meetingRoomId":item.id,
+          "auditStatus":item.auditStatus,
           ...time
         }, (data) => {
           if(_this.$store.state.commitFlag){
