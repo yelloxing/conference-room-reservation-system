@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 
 import axios from 'axios';
-
+import store from './services/store'
 Vue.use(VueRouter);
 
 // 配置路由
@@ -37,13 +37,15 @@ const router = new VueRouter({
       redirect: 'home'
     }]
 });
-
 router.beforeEach((to, from, next) => {
     axios.post('/_apigateway/sso/api/v1/info.rst',{}).then(res=>{
       if(res.data.resultCode == 0 || res.data.code == 0){
         sessionStorage.setItem('logininfo',JSON.stringify(res.data.result))
+        store.state.logininfo = res.data.result
       }else{
+        sessionStorage.clearItem('logininfo')
         sessionStorage.setItem('logoutUrl',res.data.errorMsg);
+        store.state.logininfo = {}
       }
       next()
     }).catch(()=>{

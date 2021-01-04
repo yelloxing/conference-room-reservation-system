@@ -11,10 +11,9 @@
             @click="goHome()"
             >首页</a
           >
-          <a href="javascript:void(0)" v-if="loginFlag">用户:{{ userName }}</a>
+          <a class="personal-center" href="javascript:void(0)" v-if="loginFlag">用户:{{ logininfo.data.userName }}</a>
           <a
             href="javascript:void(0)"
-            class="personal-center"
             @click="goBespeak()"
             v-if="loginFlag"
             >我的预约</a
@@ -91,20 +90,31 @@ export default {
       all_dialog: dialogs,
       loginFlag: false,
       userName: "",
-      userinfo: sessionStorage.getItem("logininfo"),
+      // userinfo: sessionStorage.getItem("logininfo"),
     };
   },
   created() {
-    let userinfo = sessionStorage.getItem("logininfo");
-    if (userinfo) {
-      this.loginFlag = true;
-      let data = JSON.parse(userinfo).data;
-      this.userName = data.userName;
+    this.getLoginStatus()
+  },
+  watch:{
+    logininfo(newV){
+      if(newV && newV.data){
+        this.getLoginStatus()
+      }
+    }
+  },
+  computed: {
+    logininfo(){
+      return this.$store.state.logininfo
     }
   },
   methods: {
-    doIt() {
-      // todo
+    getLoginStatus() {
+      if(this.logininfo && this.logininfo.data){
+        this.loginFlag = true
+      }else{
+        this.loginFlag = false
+      }
     },
     // 个人中心
     goBespeak() {
