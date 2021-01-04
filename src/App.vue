@@ -134,7 +134,7 @@ export default {
       this.$store.state.dialogVisible = false;
       if (this.$store.state.loginFlag) {
         this.$store.state.loginFlag = false;
-        window.open("http://218.94.154.34:54392/");
+        this.login()
       }
     },
     goHome() {
