@@ -53,7 +53,12 @@
         <div class="top">
           <div class="left select-frame">
             <span class="title">预约情况</span>
-            <input type="text" v-model="item.appointDate" v-calendar @input="changeDate"/>
+            <input
+              type="text"
+              v-model="item.appointDate"
+              v-calendar
+              @input="changeDate"
+            />
           </div>
           <span class="to" v-togger-view>点击查看预约的情况</span>
         </div>
@@ -63,30 +68,37 @@
             <button class="right" @click="nextWeek(item)">右边</button>
           </div>
           <div class="time">
-
             <!-- 外面的日期 -->
             <span
-              v-for="(date,i) in item.dates"
+              v-for="(date, i) in item.dates"
               :key="i"
               :class="{ selected: item.activeDateId == i }"
-              @click="activeDate(item,i)"
+              @click="activeDate(item, i)"
             >
-              {{ date.desc}}
+              {{ date.desc }}
 
               <!-- 里面的时间 -->
               <div class="time-btns" v-show="item.activeDateId == i">
-                <span v-for="(value,ind) in date.times" :key="ind" @click="preselectClick(value,item)">
-                  <div>{{value.time}}</div>
+                <span
+                  v-for="(value, ind) in date.times"
+                  :key="ind"
+                  @click="preselectClick(value, item)"
+                >
+                  <div>{{ value.time }}</div>
 
                   <!-- 小格子选中的话： <div class='active'></div> -->
 
-                  <div :class="{'active':value.active,'preselect':value.preselect}" ></div>
+                  <div
+                    :class="{
+                      active: value.active,
+                      preselect: value.preselect,
+                    }"
+                  ></div>
                 </span>
 
                 <!-- 最后一个是辅助对齐的 -->
                 <span></span>
               </div>
-
             </span>
           </div>
         </div>
@@ -105,7 +117,7 @@ import {
   dateToStr,
   numToTime,
   dateBetween,
-  getExpectDate
+  getExpectDate,
 } from "../services/dateUtil";
 export default {
   data() {
@@ -133,19 +145,21 @@ export default {
 
   methods: {
     //查询所有会议室及部门
-    queryAllMeetingRomm(){
-      this.$axios.post('_apigateway/roombooking/api/view/v1/basedata.rst',{
-        "domainId":2
-      }).then(res => {
-        if(res.data.resultCode == 0){
-          this.addressList = res.data.result.data.addresses;
-          this.departmentList = res.data.result.data.departments;
-          this.queryMeetingRoomInfo()  //查询会议室详情
-        }
-      })
+    queryAllMeetingRomm() {
+      this.$axios
+        .post("_apigateway/roombooking/api/view/v1/basedata.rst", {
+          domainId: 2,
+        })
+        .then((res) => {
+          if (res.data.resultCode == 0) {
+            this.addressList = res.data.result.data.addresses;
+            this.departmentList = res.data.result.data.departments;
+            this.queryMeetingRoomInfo(); //查询会议室详情
+          }
+        });
     },
     //查询会议室详情
-    queryMeetingRoomInfo(){
+    queryMeetingRoomInfo() {
       let options = {
         method: "POST",
         params: {
@@ -169,8 +183,8 @@ export default {
     queryAppointInfo() {
       let that = this;
       this.meetingRoomInfoList.forEach((item, index1) => {
-        item.activeDateId = 0
-        item.appointDate = item.appointDate || this.today
+        item.activeDateId = 0;
+        item.appointDate = item.appointDate || this.today;
         item.dates = getFutureWeekDay(dateToStr(item.appointDate));
         item.dates.forEach((date) => {
           date.times = that.timeList.map((time) => {
@@ -180,7 +194,9 @@ export default {
               beginTime: `${date.fullDate} ${numToTime(time)}`,
               endTime: `${date.fullDate} ${numToTime(time + 1)}`,
             };
-            let millisecond = new Date(param.fullTime).getTime();
+            let millisecond = new Date(
+              param.fullTime.replace(/-/g, "/")
+            ).getTime();
 
             item.appointments &&
               item.appointments.forEach((appointment) => {
@@ -200,7 +216,7 @@ export default {
     },
 
     //切换日期id
-    activeDate(item,i) {
+    activeDate(item, i) {
       item.activeDateId = i;
       this.meetingRoomInfoList = JSON.parse(
         JSON.stringify(this.meetingRoomInfoList)
@@ -208,79 +224,89 @@ export default {
     },
 
     //日历日期切换
-    changeDate(){
-      this.queryAppointInfo()
+    changeDate() {
+      this.queryAppointInfo();
     },
 
     //前一周
-    preWeek(item){
-      let preDate = getExpectDate(dateToStr(item.appointDate),-7)
-      item.appointDate = preDate
+    preWeek(item) {
+      let preDate = getExpectDate(dateToStr(item.appointDate), -7);
+      item.appointDate = preDate;
       this.meetingRoomInfoList = JSON.parse(
         JSON.stringify(this.meetingRoomInfoList)
       );
-      
-      this.queryAppointInfo()
+
+      this.queryAppointInfo();
     },
     //后一周
-    nextWeek(item){
-      let preDate = getExpectDate(dateToStr(item.appointDate),7)
-      item.appointDate = preDate
+    nextWeek(item) {
+      let preDate = getExpectDate(dateToStr(item.appointDate), 7);
+      item.appointDate = preDate;
       this.meetingRoomInfoList = JSON.parse(
         JSON.stringify(this.meetingRoomInfoList)
       );
-      this.queryAppointInfo()
-
+      this.queryAppointInfo();
     },
-    preselectClick(value,item){
-      if(value.active){
-        return
+    preselectClick(value, item) {
+      if (value.active) {
+        return;
       }
 
+      let daysBetween = dateBetween(this.today, value.beginTime); //当前预约的点与现在的差值天数
+      let timesBetween = dateBetween(this.today, value.beginTime, true); //当前预约的点与现在的差值小时数
 
-      let daysBetween =  dateBetween(this.today,value.beginTime)   //当前预约的点与现在的差值天数
-      let timesBetween =  dateBetween(this.today,value.beginTime,true) //当前预约的点与现在的差值小时数
-      
-      if(timesBetween < 0){
-        this.$store.state.openDialog('alert',{
-          errorMsg:'请选择当前时间之后的时间进行预约'
-        })
-        return
-      }
-      
-      if(item.maxPreTime != undefined && item.maxPreTime != 0 &&daysBetween > item.maxPreTime){  //选定的天数差 大于 最大预约天数
-          this.$store.state.openDialog('alert',{
-          errorMsg:'预约时间大于该资源最大预约天数:'+item.maxPreTime + '天'
-        })
-        return
+      if (timesBetween < 0) {
+        this.$store.state.openDialog("alert", {
+          errorMsg: "请选择当前时间之后的时间进行预约",
+        });
+        return;
       }
 
-      if(item.maxStopTime && item.maxStopTime != 0 && timesBetween < item.maxStopTime){ //选定的小时差 小于 最大停止预约时间 
-        this.$store.state.openDialog('alert',{
-          errorMsg:'当前时间已过最大停止预约时间:'+item.maxStopTime + '小时'
-        })
-        return
+      if (
+        item.maxPreTime != undefined &&
+        item.maxPreTime != 0 &&
+        daysBetween > item.maxPreTime
+      ) {
+        //选定的天数差 大于 最大预约天数
+        this.$store.state.openDialog("alert", {
+          errorMsg: "预约时间大于该资源最大预约天数:" + item.maxPreTime + "天",
+        });
+        return;
       }
 
-      let i
-      let select = this.preselectList.find((row,index) => {
-        if(row.fullTime == value.fullTime){
-          i = index
-          return true
+      if (
+        item.maxStopTime &&
+        item.maxStopTime != 0 &&
+        timesBetween < item.maxStopTime
+      ) {
+        //选定的小时差 小于 最大停止预约时间
+        this.$store.state.openDialog("alert", {
+          errorMsg: "当前时间已过最大停止预约时间:" + item.maxStopTime + "小时",
+        });
+        return;
+      }
+
+      let i;
+      let select = this.preselectList.find((row, index) => {
+        if (row.fullTime == value.fullTime) {
+          i = index;
+          return true;
         }
-        return false
-      })
+        return false;
+      });
 
-      if(select){
-        this.preselectList.splice(i,1)
-        this.$set(value,'preselect',false)
-      }else{
-        this.preselectList.push(value)
-        this.$set(value,'preselect',true)
+      if (select) {
+        this.preselectList.splice(i, 1);
+        this.$set(value, "preselect", false);
+      } else {
+        this.preselectList.push(value);
+        this.$set(value, "preselect", true);
       }
-      this.meetingRoomInfoList=JSON.parse(JSON.stringify(this.meetingRoomInfoList));
+      this.meetingRoomInfoList = JSON.parse(
+        JSON.stringify(this.meetingRoomInfoList)
+      );
     },
-    
+
     //切换地点
     changeAddress(row) {
       this.addressId = row ? row.id : "";
@@ -289,59 +315,70 @@ export default {
 
     //  会议室介绍
     goDetail(item) {
-      window.location.href = item.infoUrl
+      window.location.href = item.infoUrl;
     },
     remind(item) {
-      if(!sessionStorage.getItem('logininfo')){
-        this.$store.state.loginFlag = true
-        this.$store.state.openDialog('alert',{
-          errorMsg:'请先登录'
-        })
-        return
+      if (!sessionStorage.getItem("logininfo")) {
+        this.$store.state.loginFlag = true;
+        this.$store.state.openDialog("alert", {
+          errorMsg: "请先登录",
+        });
+        return;
       }
 
-      if(this.preselectList.length == 0){
-        this.$store.state.openDialog('alert',{
-          errorMsg:'请先选择预约时间'
-        })
-        return
+      if (this.preselectList.length == 0) {
+        this.$store.state.openDialog("alert", {
+          errorMsg: "请先选择预约时间",
+        });
+        return;
       }
 
+      let arr = this.preselectList.sort(function(a, b) {
+        return (
+          new Date(a.beginTime.replace(/-/g,'/')).getTime() - new Date(b.beginTime.replace(/-/g,'/')).getTime()
+        );
+      });
 
-      let arr = this.preselectList.sort(function(a,b){
-        return new Date(a.beginTime).getTime() - new Date(b.beginTime).getTime()
-      })
-
-      if(dateBetween(arr[0].beginTime,arr[arr.length -1].beginTime,true) != arr.length - 1){
-        this.$store.state.openDialog('alert',{
-          errorMsg:'请选择连续的时间'
-        })
-        return
+      if (
+        dateBetween(arr[0].beginTime, arr[arr.length - 1].beginTime, true) !=
+        arr.length - 1
+      ) {
+        this.$store.state.openDialog("alert", {
+          errorMsg: "请选择连续的时间",
+        });
+        return;
       }
 
-       //计算连续的时间段是否超过最大预约时长
-      let beginTime = arr[0].beginTime  
-      let endTime = arr[arr.length-1].endTime
-      let between = dateBetween(beginTime,endTime,true)
+      //计算连续的时间段是否超过最大预约时长
+      let beginTime = arr[0].beginTime;
+      let endTime = arr[arr.length - 1].endTime;
+      let between = dateBetween(beginTime, endTime, true);
 
-      if(item.maxUseTime && item.maxUseTime != 0 && between > item.maxUseTime){ 
-        this.$store.state.openDialog('alert',{
-          errorMsg:'预约时间段大于该资源最大预约时长:'+this.form.maxUseTime + '小时'
-        })
-        return
+      if (
+        item.maxUseTime &&
+        item.maxUseTime != 0 &&
+        between > item.maxUseTime
+      ) {
+        this.$store.state.openDialog("alert", {
+          errorMsg:
+            "预约时间段大于该资源最大预约时长:" + this.form.maxUseTime + "小时",
+        });
+        return;
       }
 
       let param = {
-          departments:this.departmentList,   //部门
-          date:arr[0].beginTime + '-' + arr[arr.length - 1].endTime.split(' ')[1],
-          meetingRoomName:item.name,
-          meetingRoomId:item.id,
-          maxStopTime:item.maxStopTime,
-          maxPreTime:item.maxPreTime,
-          maxUseTime:item.maxUseTime
-      }
+        departments: this.departmentList, //部门
+        date:
+          arr[0].beginTime + "-" + arr[arr.length - 1].endTime.split(" ")[1],
+        meetingRoomName: item.name,
+        meetingRoomId: item.id,
+        maxStopTime: item.maxStopTime,
+        maxPreTime: item.maxPreTime,
+        maxUseTime: item.maxUseTime,
+      };
 
-      this.$router.push({ name:"bespeak", params:param });
+      this.$router.push({ name: "bespeak", params: param });
+      this.preselectList = []
     },
   },
 };
@@ -535,8 +572,8 @@ export default {
                     &.active {
                       background-color: #dc1c19;
                     }
-                    &.preselect{
-                      border:1px solid #dc1c19;
+                    &.preselect {
+                      border: 1px solid #dc1c19;
                       box-sizing: border-box;
                     }
                   }
