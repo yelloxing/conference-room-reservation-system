@@ -207,8 +207,7 @@ export default {
     this.$set(this.form,'endTime',data.endTime)
     this.$set(this.form,'date',[data.beginTime,data.endTime])
 
-    // this.$set(this.form,'auditStatus',data.auditStatus)
-    this.$set(this.form,'auditStatus',0)
+    this.$set(this.form,'auditStatus',data.auditStatus)
     this.fullTime = this.form.date[0] + '-' + this.form.date[1].split(' ')[1]
 
     this.flag = data.flag || 'add'

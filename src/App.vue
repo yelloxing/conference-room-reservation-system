@@ -109,6 +109,9 @@ export default {
     }
   },
   methods: {
+    doIt(){
+
+    },
     getLoginStatus() {
       if(this.logininfo && this.logininfo.data){
         this.loginFlag = true
