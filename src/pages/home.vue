@@ -284,16 +284,14 @@ export default {
           "meetingRoomId":item.id,
           ...time
         }, (data) => {
-          if(data){
-            if(data.auditStatus == '1'){
-              this.$store.state.dialogVisible = true
-              this.$store.state.message = "预约信息已提交，待审核"
-            }else if(data.auditStatus == '0'){
-              this.$store.state.dialogVisible = true
-              this.$store.state.message = "预约成功"
-            }
-          } 
           if(_this.$store.state.commitFlag){
+            if(item.auditStatus == 0){
+              _this.$store.state.dialogVisible = true
+              _this.$store.state.message = '预约成功'
+            }else{
+              _this.$store.state.dialogVisible = true
+              _this.$store.state.message = '预约信息已提交，待审核'
+            }
              _this.searchAll()
              _this.preselectList = []
              _this.$store.state.commitFlag = false

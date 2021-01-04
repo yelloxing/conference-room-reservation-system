@@ -140,9 +140,10 @@
         </div>
       </div>
       <div class="btn-list">
-        <button @click.prevent="commit('form', 'save')">保存</button>
+        <button @click.prevent="commit('form', '-1')">保存</button>
         <button @click.prevent="reset">重置</button>
-        <button @click.prevent="commit('form')">确认预约</button>
+        <button @click.prevent="commit('form','0')" v-if="form.auditStatus != 0">确认预约</button>
+        <button @click.prevent="commit('form','1')" v-if="form.auditStatus == 0">确认预约</button>
       </div>
     </el-form>
   </div>
@@ -206,6 +207,8 @@ export default {
     this.$set(this.form,'endTime',data.endTime)
     this.$set(this.form,'date',[data.beginTime,data.endTime])
 
+    // this.$set(this.form,'auditStatus',data.auditStatus)
+    this.$set(this.form,'auditStatus',0)
     this.fullTime = this.form.date[0] + '-' + this.form.date[1].split(' ')[1]
 
     this.flag = data.flag || 'add'
@@ -313,8 +316,8 @@ export default {
       });
     },
 
-    //提交表单   存在save则为保存，不存在save则为提交
-    commit(form, save) {
+    //提交表单   
+    commit(form, status) {
       let _this = this;
       this.$refs[form].validate((valid) => {
         if (valid) {
@@ -385,7 +388,7 @@ export default {
                   id:_this.form.recordId,
                   subject:_this.form.subject,
                   remark:_this.form.remark,
-                  status:save ? '-1' : '0',
+                  status:status,
                   fileKey:res.data.result.data[0].fileKey,
                   fileName:res.data.result.data[0].fileName,
                 }
@@ -414,7 +417,7 @@ export default {
                 resourceId: _this.form.resourceId,
                 id:_this.form.recordId,
                 subject:_this.form.subject,
-                status:save ? '-1' : '0',
+                status:status,
                 remark:_this.form.remark,
                 fileKey:_this.flag == 'add' ? '' : _this.form.fileKey,
                 fileName:_this.flag == 'add' ? '' : _this.form.fileName
@@ -423,7 +426,6 @@ export default {
               if(res.data.resultCode == 0){
                 _this.$store.state.commitFlag = true
                 _this.$store.state.closeDialog()
-                
               }
             });
           }
