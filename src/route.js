@@ -43,7 +43,7 @@ router.beforeEach((to, from, next) => {
         sessionStorage.setItem('logininfo',JSON.stringify(res.data.result))
         store.state.logininfo = res.data.result
       }else{
-        sessionStorage.clearItem('logininfo')
+        sessionStorage.removeItem('logininfo')
         sessionStorage.setItem('logoutUrl',res.data.errorMsg);
         store.state.logininfo = {}
       }
