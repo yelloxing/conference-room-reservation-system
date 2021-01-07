@@ -5,7 +5,7 @@ import store from './store'
 Vue.prototype.$axios = axios
 
 const instance = axios.create({
-    baseURL: '/',
+    baseURL: '/_customs/suda/appointment/mobile/',
     timeout: 1000,
     headers: {
         'Content-type': 'application/json'
