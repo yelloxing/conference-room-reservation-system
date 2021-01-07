@@ -147,7 +147,7 @@ export default {
     //查询所有会议室及部门
     queryAllMeetingRomm() {
       this.$axios
-        .post("_apigateway/roombooking/api/view/v1/basedata.rst", {
+        .post(this.$axios_baseUrl + "_apigateway/roombooking/api/view/v1/basedata.rst", {
           domainId: 2,
         })
         .then((res) => {
@@ -168,7 +168,7 @@ export default {
           addressId: this.addressId,
           keywords: this.keywords,
         },
-        url: "_apigateway/roombooking/api/view/v1/rooms.rst",
+        url: this.$axios_baseUrl + "_apigateway/roombooking/api/view/v1/rooms.rst",
       };
       this.$axios(options).then((res) => {
         if (res.data.code == 0) {

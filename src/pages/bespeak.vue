@@ -295,7 +295,7 @@ export default {
           headers: { "Content-Type": "multipart/form-data" },
         }; //添加请求头
 
-        _this.$axios.post("_fileup", param, config).then((res) => {
+        _this.$axios.post(this.$axios_baseUrl + "_fileup", param, config).then((res) => {
           if (res.data.result) {
             let params = {
               domainId: 2,
@@ -317,7 +317,7 @@ export default {
               fileKey: res.data.result.data[0].fileKey,
               fileName: res.data.result.data[0].fileName,
             };
-            _this.$axios.post("_apigateway/roombooking/api/v1/create.rst", params).then(res => {
+            _this.$axios.post(this.$axios_baseUrl + "_apigateway/roombooking/api/v1/create.rst", params).then(res => {
                 if (res.data && res.data.resultCode == 0) {
                   _this.$store.state.commitFlag = true;
                   if(_this.form.auditStatus == 0){
@@ -359,7 +359,7 @@ export default {
           fileName: "",
         };
         _this.$axios
-          .post("_apigateway/roombooking/api/v1/create.rst", params)
+          .post(this.$axios_baseUrl + "_apigateway/roombooking/api/v1/create.rst", params)
           .then(res => {
             console.log(res)
             if (res.data.resultCode == 0) {
