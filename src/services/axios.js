@@ -3,7 +3,7 @@ import axios from 'axios'
 import store from './store'
 
 Vue.prototype.$axios = axios
-Vue.prototype.$axios_baseUrl = '../'
+Vue.prototype.$axios_baseUrl = '/'
 
 const instance = axios.create({
     baseURL: '/',
