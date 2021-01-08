@@ -46,7 +46,7 @@ router.beforeEach((to, from, next) => {
       store.state.logininfo = res.data.result
     }else{
       sessionStorage.removeItem('logininfo')
-      sessionStorage.setItem('loginUrl',JSON.stringify(res.data.errorMsg))
+      sessionStorage.setItem('loginUrl',res.data.errorMsg)
     }
     next()
   }).catch(()=>{
