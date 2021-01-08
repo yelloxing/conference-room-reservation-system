@@ -76,9 +76,7 @@ export default {
   },
   watch:{
     logininfo(newv){
-      if(newv && newv.data){
-        this.getLoginStatus()
-      }
+      this.getLoginStatus()
     }
   },
   computed: {
@@ -106,7 +104,9 @@ export default {
     logout() {
       let logininfo = sessionStorage.getItem("logininfo");
       let userinfo = JSON.parse(logininfo).data;
-      window.location.href = userinfo.logoutUrl;
+      window.open(userinfo.logoutUrl)
+      this.$store.state.logininfo = {}
+      sessionStorage.removeItem('logininfo')
     },
     handleConfirm() {},
   },
