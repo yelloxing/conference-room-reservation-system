@@ -16,6 +16,30 @@
     <!-- 打包文件 -->
     <script src="./build/main.js"></script>
 
+    <script>
+        function getUA(){
+            
+            var userAgentInfo = navigator.userAgent.toLowerCase();
+            var Agents = ["android", "iphone", "symbianos", "windows phone","ipad", "ipod"];
+            var flag = true
+            for (var v = 0; v < Agents.length; v++) {
+                if (userAgentInfo.indexOf(Agents[v]) >= 0) {
+                    flag = false
+                    break
+                }
+            }
+            return flag
+        }
+
+        var flag = getUA()
+        if(flag){
+            location.replace('http://218.94.154.34:54392/_customs/suda/appointment/index.html#/home')
+        }else{
+            location.replace('http://218.94.154.34:54392/_customs/suda/appointment/mobile/index.html#/home')
+        }
+    
+    </script>
+
 </body>
 
 </html>
