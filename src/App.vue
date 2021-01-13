@@ -11,7 +11,13 @@
             @click="goHome()"
             >首页</a
           >
-          <a class="personal-center" href="javascript:void(0)" v-if="loginFlag">用户:{{ logininfo.data.userName }}</a>
+          <a class="personal-center" href="javascript:void(0)" v-if="loginFlag">{{ logininfo.data.userName }}</a>
+          <a
+            href="javascript:void(0)"
+            @click="goManage()"
+            v-if="loginFlag"
+            >后台管理</a
+          >
           <a
             href="javascript:void(0)"
             @click="goBespeak()"
@@ -111,6 +117,9 @@ export default {
   methods: {
     doIt(){
 
+    },
+    goManage(){
+      window.location.href = "http://42.244.43.58/"
     },
     getLoginStatus() {
       if(this.logininfo && this.logininfo.data){
