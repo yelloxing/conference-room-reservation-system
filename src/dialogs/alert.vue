@@ -22,7 +22,8 @@ export default {
     methods: {
         handleCommit(){
             if(this.data.loginFlag){
-                window.location.href = "http://218.94.154.34:54392/"
+                let loginUrl = sessionStorage.getItem('loginUrl')
+                window.open(loginUrl)
             }else{
                 this.$store.state.closeDialog()
             }
