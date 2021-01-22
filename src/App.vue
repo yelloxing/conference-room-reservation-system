@@ -119,7 +119,7 @@ export default {
 
     },
     goManage(){
-      window.location.href = "http://42.244.43.58/"
+      window.location.href = "http://hysgl.suda.edu.cn/login.jsp"
     },
     getLoginStatus() {
       if(this.logininfo && this.logininfo.data){
