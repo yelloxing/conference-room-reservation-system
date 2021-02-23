@@ -39,7 +39,7 @@
     <!-- 具体的会议室在这里v-for显示 -->
     <div class="item container" v-for="(item,index) in meetingRoomInfoList" :key="index">
       <div class="left">
-        <div class="room">
+        <div class="room" :style="{'background-image':'url('+item.imgUrl+')'}"> 
           <h2>{{item.name}}</h2>
           <p>
             <span>容纳人数：</span>
@@ -171,6 +171,9 @@ export default {
         _this.meetingRoomInfoList = res.data.data 
         for(let k = 0; k < _this.meetingRoomInfoList.length; k++){   //根据查询后的数据计算每个会议室的预约情况
           let item = _this.meetingRoomInfoList[k]
+          if(!item.imgUrl){
+            item.imgUrl = require("../assets/images/icon14.png")
+          }
           this.queryAppointment(item,date)
         }
       })
@@ -457,7 +460,8 @@ export default {
           & > .room {
             padding-left: 2rem;
             height: 2.3rem;
-            background-image: url("../assets/images/icon14.png");
+            // background-image: url("../assets/images/icon14.png");
+            background-size: 180px 180px;
             background-repeat: no-repeat;
             background-position: left top;
             & > h2 {
