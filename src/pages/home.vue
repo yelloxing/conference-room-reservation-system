@@ -32,7 +32,7 @@
     >
       <div class="top">
         <div class="header">
-          <div class="room">
+          <div class="room" :style="{'background-image':'url(' + item.imgUrl + ')'}">
             <h2>{{ item.name }}</h2>
             <p>
               <span>容纳人数：</span>
@@ -183,6 +183,9 @@ export default {
     queryAppointInfo() {
       let that = this;
       this.meetingRoomInfoList.forEach((item, index1) => {
+        if(!item.imgUrl){
+          item.imgUrl = require('../assets/images/icon14.png')
+        }
         item.activeDateId = 0;
         item.appointDate = item.appointDate || this.today;
         item.dates = getFutureWeekDay(dateToStr(item.appointDate));
@@ -463,7 +466,7 @@ export default {
           & > .room {
             padding-right: 3rem;
             min-height: 2.3rem;
-            background-image: url("../assets/images/icon14.png");
+            // background-image: url("../assets/images/icon14.png");
             background-repeat: no-repeat;
             background-position: right top;
             background-size: 2.8rem auto;
