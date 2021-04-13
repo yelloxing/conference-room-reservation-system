@@ -327,7 +327,7 @@ export default {
           errorMsg: "请先登录",
         },()=>{
           let loginUrl = sessionStorage.getItem('loginUrl')
-          window.open(loginUrl)
+          location.href = loginUrl
         });
         return;
       }

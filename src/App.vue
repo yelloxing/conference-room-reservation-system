@@ -99,12 +99,12 @@ export default {
     },
     login() {
       let loginUrl = sessionStorage.getItem('loginUrl')
-      window.open(loginUrl)
+      location.href = loginUrl
     },
     logout() {
       let logininfo = sessionStorage.getItem("logininfo");
       let userinfo = JSON.parse(logininfo).data;
-      window.open(userinfo.logoutUrl)
+      location.href = userinfo.logoutUrl;
       this.$store.state.logininfo = {}
       sessionStorage.removeItem('logininfo')
     },

@@ -23,7 +23,7 @@ export default {
         handleCommit(){
             if(this.data.loginFlag){
                 let loginUrl = sessionStorage.getItem('loginUrl')
-                window.open(loginUrl)
+                location.href = loginUrl
             }else{
                 this.$store.state.closeDialog()
             }
